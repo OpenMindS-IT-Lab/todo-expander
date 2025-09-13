@@ -1,0 +1,7 @@
+name: Expand TODOs (staged)
+description: Rewrite plain TODO comments in staged files into Codex-ready briefs (Context/Goal/Steps/Constraints/Acceptance), then re-stage and format.
+command: |
+  # Expand TODOs in staged files using the global CLI
+  # Requires OPENAI_API_KEY in env and todo-expand CLI on PATH
+  todo-expand --staged
+tags: [ai, todos, codex, prompts]

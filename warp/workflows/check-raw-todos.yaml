@@ -1,0 +1,9 @@
+name: Check for raw TODOs (fail if found)
+description: CI-style check that fails when unstructured TODOs are found in staged files.
+command: |
+  files=$(git diff --name-only --cached | grep -E '\\.(ts|tsx|js|jsx|py|go|rs|md)$' || true)
+  if [ -z "$files" ]; then echo "No staged source files"; exit 0; fi
+  bad=$(grep -nE 'TODO(:| )' $files | grep -viE 'AI TASK|Context|Goal|Steps|Constraints|Acceptance' || true)
+  if [ -n "$bad" ]; then echo "Found unstructured TODOs:"; echo "$bad"; exit 1; fi
+  echo "No raw TODOs found"
+tags: [ai, todos, check]

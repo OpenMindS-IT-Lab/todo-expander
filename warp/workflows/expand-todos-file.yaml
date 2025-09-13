@@ -1,0 +1,7 @@
+name: Expand TODOs (file)
+description: Rewrite TODOs in a specific file (path required).
+command: |
+  # Usage: run with ARG=<path>
+  if [ -z "$ARG" ]; then echo "Usage: ARG=<file>"; exit 2; fi
+  todo-expand "$ARG"
+tags: [ai, todos]

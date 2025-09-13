@@ -1,0 +1,5 @@
+name: Expand TODOs (dry-run)
+description: Preview rewrites for staged files without changing them.
+command: |
+  TODO_EXPAND_DRY=1 todo-expand --staged
+tags: [ai, todos, preview]
