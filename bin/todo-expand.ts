@@ -15,19 +15,19 @@
  *   --allow-read --allow-write --allow-env --allow-run=git --allow-net=api.openai.com
  */
 
-import { parseArgs } from "https://deno.land/std@0.223.0/cli/parse_args.ts"
-import { join, relative } from "https://deno.land/std@0.223.0/path/mod.ts"
-import { exists } from "https://deno.land/std@0.223.0/fs/exists.ts"
-import { load as loadEnv } from "https://deno.land/std@0.223.0/dotenv/mod.ts"
+import { parseArgs } from 'https://deno.land/std@0.223.0/cli/parse_args.ts'
+import { join, relative } from 'https://deno.land/std@0.223.0/path/mod.ts'
+import { exists } from 'https://deno.land/std@0.223.0/fs/exists.ts'
+import { load as loadEnv } from 'https://deno.land/std@0.223.0/dotenv/mod.ts'
 
-import { loadConfig } from "../src/config.ts"
-import { discoverTargets } from "../src/targets.ts"
-import { processFile } from "../src/process.ts"
-import { bold, green, gray, yellow } from "../src/log.ts"
+import { loadConfig } from '../src/config.ts'
+import { discoverTargets } from '../src/targets.ts'
+import { processFile } from '../src/process.ts'
+import { bold, gray, green, yellow } from '../src/log.ts'
 
 // Load environment from .env and .env.local if present (explicit order)
 try {
-  await loadEnv({ envPath: [".env.local", ".env"], export: true })
+  await loadEnv({ envPath: ['.env.local', '.env'], export: true })
 } catch (_) {}
 
 /**
@@ -36,18 +36,21 @@ try {
  */
 // Fallback: lightweight manual parser if dotenv fails to export
 async function loadEnvFallback() {
-  for (const p of [".env.local", ".env"]) {
+  for (const p of ['.env.local', '.env']) {
     try {
       if (!(await exists(p))) continue
       const txt = await Deno.readTextFile(p)
-      for (const raw of txt.split("\n")) {
+      for (const raw of txt.split('\n')) {
         const line = raw.trim()
-        if (!line || line.startsWith("#")) continue
-        const eq = line.indexOf("=")
+        if (!line || line.startsWith('#')) continue
+        const eq = line.indexOf('=')
         if (eq === -1) continue
         const key = line.slice(0, eq).trim()
         let val = line.slice(eq + 1).trim()
-        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        if (
+          (val.startsWith('"') && val.endsWith('"')) ||
+          (val.startsWith("'") && val.endsWith("'"))
+        ) {
           val = val.slice(1, -1)
         }
         if (!Deno.env.get(key)) Deno.env.set(key, val)
@@ -61,7 +64,8 @@ await loadEnvFallback()
 
 /** Print CLI usage and common options. */
 function printHelp() {
-  const help = `todo-expand - Rewrite TODOs into Codex-ready briefs (Senior Prompt Engineer style)
+  const help =
+    `todo-expand - Rewrite TODOs into Codex-ready briefs (Senior Prompt Engineer style)
 
 Usage:
   todo-expand [options] [paths...]
@@ -80,9 +84,16 @@ Common:
   --print                Print rewritten comments to stdout
   --model=<name>         Override model (default: OPENAI_MODEL or gpt-4o-mini)
   --endpoint=<url>       OpenAI Responses API endpoint (default: https://api.openai.com/v1/responses)
-  --timeout=<ms>         Per-request timeout in milliseconds (default: 20000)
+  --timeout=<ms>         Per-request timeout in milliseconds (default: 45000)
+  --retries=<n>          Retry attempts on timeout/429/5xx (default: 2)
+  --retry-backoff-ms=<n> Base backoff in ms for retries (default: 500)
+  --file-timeout=<ms>    Abort processing a file after this many ms (default: 120000)
   --concurrency=<n>      Concurrent LLM requests (default: 1)
   --help, -h             Show this help
+
+Notes:
+  - A timeout causes a client-side abort; the server may still complete the request.
+  - Retries apply to timeouts, 429, and 5xx responses with exponential backoff and jitter.
 
 Environment:
   OPENAI_API_KEY         Required. Your OpenAI API key
@@ -113,26 +124,29 @@ Notes:
 async function main() {
   const flags = parseArgs(Deno.args, {
     boolean: [
-      "staged",
-      "dry-run",
-      "no-cache",
-      "no-format",
-      "strict",
-      "print",
-      "help",
+      'staged',
+      'dry-run',
+      'no-cache',
+      'no-format',
+      'strict',
+      'print',
+      'help',
     ],
     string: [
-      "include",
-      "exclude",
-      "style",
-      "sections",
-      "model",
-      "endpoint",
-      "timeout",
-      "concurrency",
-      "context-lines",
+      'include',
+      'exclude',
+      'style',
+      'sections',
+      'model',
+      'endpoint',
+      'timeout',
+      'concurrency',
+      'context-lines',
+      'retries',
+      'retry-backoff-ms',
+      'file-timeout',
     ],
-    alias: { n: "dry-run", h: "help" },
+    alias: { n: 'dry-run', h: 'help' },
     default: {},
   })
 
@@ -141,7 +155,7 @@ async function main() {
     return
   }
 
-  const dryRun = flags["dry-run"] || Deno.env.get("TODO_EXPAND_DRY") === "1"
+  const dryRun = flags['dry-run'] || Deno.env.get('TODO_EXPAND_DRY') === '1'
   const cwd = Deno.cwd()
 
   // Load config (repo-level and global)
@@ -156,18 +170,29 @@ async function main() {
       endpoint: flags.endpoint,
       timeout: flags.timeout ? Number(flags.timeout) : undefined,
       concurrency: flags.concurrency ? Number(flags.concurrency) : undefined,
-      contextLines: flags["context-lines"] ? Number(flags["context-lines"]) : undefined,
-      cache: flags["no-cache"] ? false : undefined,
-      format: flags["no-format"] ? false : undefined,
+      contextLines: flags['context-lines']
+        ? Number(flags['context-lines'])
+        : undefined,
+      cache: flags['no-cache'] ? false : undefined,
+      format: flags['no-format'] ? false : undefined,
       strict: flags.strict ?? undefined,
       print: flags.print ?? undefined,
+      retries: flags.retries ? Number(flags.retries) : undefined,
+      retryBackoffMs: flags['retry-backoff-ms']
+        ? Number(flags['retry-backoff-ms'])
+        : undefined,
+      perFileTimeoutMs: flags['file-timeout']
+        ? Number(flags['file-timeout'])
+        : undefined,
     },
   })
 
-  const apiKey = Deno.env.get("OPENAI_API_KEY")
+  const apiKey = Deno.env.get('OPENAI_API_KEY')
   if (!apiKey) {
     console.error(
-      yellow("OPENAI_API_KEY is not set. Export it before running (see Notebook Preflight)."),
+      yellow(
+        'OPENAI_API_KEY is not set. Export it before running (see Notebook Preflight).',
+      ),
     )
     Deno.exit(2)
   }
@@ -176,7 +201,7 @@ async function main() {
   const argPaths = flags._.map(String)
   const targets = await discoverTargets({
     cwd,
-    mode: flags.staged ? "staged" : "paths",
+    mode: flags.staged ? 'staged' : 'paths',
     paths: argPaths,
     include: cfg.include,
     exclude: cfg.exclude,
@@ -184,7 +209,7 @@ async function main() {
   })
 
   if (!targets.length) {
-    console.log(gray("No matching target files."))
+    console.log(gray('No matching target files.'))
     return
   }
 
@@ -193,21 +218,42 @@ async function main() {
   let changedCount = 0
   let todoCount = 0
 
+  let processed = 0
   for (const abs of targets) {
     const rel = relative(cwd, abs)
-    const ok = await processFile({
-      absPath: abs,
-      relPath: rel,
-      cfg,
-      apiKey,
-      dryRun,
-    })
-
-    if (ok.changed) changedCount += ok.changed
-    if (ok.todosFound) todoCount += ok.todosFound
+    if (cfg.verboseLogs) {
+      console.log(gray(`[start] ${rel}`))
+    }
+    try {
+      const ok = await processFile({
+        absPath: abs,
+        relPath: rel,
+        cfg,
+        apiKey,
+        dryRun,
+      })
+      if (ok.changed) changedCount += ok.changed
+      if (ok.todosFound) todoCount += ok.todosFound
+      processed++
+      if (cfg.verboseLogs) {
+        console.log(
+          gray(
+            `[done]  ${rel}  (todos: ${ok.todosFound}, changed: ${ok.changed})`,
+          ),
+        )
+      } else {
+        if (processed % 5 === 0 || processed === targets.length) {
+          console.log(gray(`progress: ${processed}/${targets.length} files...`))
+        }
+      }
+    } catch (err) {
+      console.error(yellow(`[error] ${rel}: ${err?.message || err}`))
+    }
   }
 
-  console.log(green(`Done. TODOs found: ${todoCount}, files changed: ${changedCount}`))
+  console.log(
+    green(`Done. TODOs found: ${todoCount}, files changed: ${changedCount}`),
+  )
 }
 
 if (import.meta.main) {

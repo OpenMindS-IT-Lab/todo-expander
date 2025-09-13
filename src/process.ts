@@ -1,11 +1,11 @@
 /** Processing pipeline for per-file TODO expansion and rewrite. */
-import { Cfg } from "./config.ts"
-import { detectTodos } from "./todos.ts"
-import { renderPrompt, runLLM } from "./prompt.ts"
-import { applyRewrites } from "./rewrite.ts"
-import { formatFiles } from "./format.ts"
-import { gray } from "./log.ts"
-import { readCache, writeCache } from "./cache.ts"
+import { Cfg } from './config.ts'
+import { detectTodos } from './todos.ts'
+import { renderPrompt, runLLM } from './prompt.ts'
+import { applyRewrites } from './rewrite.ts'
+import { formatFiles } from './format.ts'
+import { gray } from './log.ts'
+import { readCache, writeCache } from './cache.ts'
 
 /**
  * Process a single file: detect TODOs, expand via LLM, rewrite in-place,
@@ -38,7 +38,17 @@ export async function processFile({
   const cachePath = `${Deno.cwd()}/.git/.todoexpand-cache.json`
   const cache = cfg.cache ? await readCache(cachePath) : {}
 
-  const updated = await rewriteTodos({ content, todos, relPath, cfg, apiKey, dryRun, cache })
+  const start = Date.now()
+  const updated = await rewriteTodos({
+    content,
+    todos,
+    relPath,
+    cfg,
+    apiKey,
+    dryRun,
+    cache,
+    fileStart: start,
+  })
   if (cfg.cache) await writeCache(cachePath, cache)
   if (updated === null) return { changed: 0, todosFound: todos.length }
 
@@ -75,11 +85,22 @@ async function rewriteTodos({
   apiKey,
   dryRun,
   cache,
+  fileStart,
 }: any): Promise<string | null> {
   let text = content
   // Process from bottom to top to keep indices stable
   const sorted = [...todos].sort((a, b) => b.start - a.start)
   for (const todo of sorted) {
+    // Per-file timeout check
+    if (Date.now() - fileStart > (cfg.perFileTimeoutMs ?? 120000)) {
+      console.error(
+        gray(
+          `[timeout] file exceeded ${cfg.perFileTimeoutMs}ms, skipping remaining TODOs`,
+        ),
+      )
+      break
+    }
+
     const codeContext = extractContext(text, todo, cfg.contextLines)
     const rendered = await renderPrompt({
       filePath: relPath,
@@ -93,7 +114,11 @@ async function rewriteTodos({
     const key = cacheKey(relPath, todo.raw)
     if (cfg.cache && cache[key]) {
       // Skip LLM call; reuse cached output
-      const replaced = applyRewrites({ content: text, todo, newComment: cache[key] })
+      const replaced = applyRewrites({
+        content: text,
+        todo,
+        newComment: cache[key],
+      })
       text = replaced
       continue
     }
@@ -137,7 +162,7 @@ function fnv1aHex(str: string): string {
     h ^= str.charCodeAt(i)
     h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0
   }
-  return h.toString(16).padStart(8, "0")
+  return h.toString(16).padStart(8, '0')
 }
 
 /**
@@ -146,7 +171,7 @@ function fnv1aHex(str: string): string {
  * @param raw - Raw TODO text.
  */
 function cacheKey(path: string, raw: string) {
-  return fnv1aHex(path + "::" + raw)
+  return fnv1aHex(path + '::' + raw)
 }
 
 /**

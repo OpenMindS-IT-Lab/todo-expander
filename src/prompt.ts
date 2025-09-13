@@ -1,5 +1,5 @@
-import { Cfg } from "./config.ts"
-import { join } from "https://deno.land/std@0.223.0/path/mod.ts"
+import { Cfg } from './config.ts'
+import { join } from 'https://deno.land/std@0.223.0/path/mod.ts'
 
 /**
  * Load the external prompt template if present; otherwise null to use fallback.
@@ -8,7 +8,7 @@ import { join } from "https://deno.land/std@0.223.0/path/mod.ts"
 async function loadTemplate(): Promise<string | null> {
   // Prefer external prompt file for auditability
   const candidates = [
-    join(Deno.cwd(), "prompts/todo_expander.prompt.md"),
+    join(Deno.cwd(), 'prompts/todo_expander.prompt.md'),
   ]
   for (const p of candidates) {
     try {
@@ -30,7 +30,7 @@ async function loadTemplate(): Promise<string | null> {
 function fillTemplate(tpl: string, vars: Record<string, string>): string {
   let out = tpl
   for (const [k, v] of Object.entries(vars)) {
-    const re = new RegExp(`\\{\\{${k}\\}\\}`, "g")
+    const re = new RegExp(`\\{\\{${k}\\}\\}`, 'g')
     out = out.replace(re, v)
   }
   return out
@@ -60,17 +60,17 @@ export async function renderPrompt({
   language: string
   todoComment: string
   codeContext: string
-  style: Cfg["style"]
+  style: Cfg['style']
   sections: string[]
 }): Promise<string> {
   const tpl = await loadTemplate()
   const vars = {
     file_path: filePath,
-    language: language || "",
+    language: language || '',
     todo_comment: todoComment,
     code_context: codeContext,
     style: style,
-    sections: sections.join(", "),
+    sections: sections.join(', '),
   } as Record<string, string>
 
   if (tpl) {
@@ -78,7 +78,10 @@ export async function renderPrompt({
   }
 
   // Fallback minimal instructions if template missing
-  const prompt = `You are a senior prompt engineer. Rewrite TODOs into Codex-ready task briefs with:\n- Context\n- Goal\n- Steps (re-runnable, idempotent)\n- Constraints\n- Acceptance\nAlways preserve current runtime behavior and visible UI. Keep diffs minimal. Use the same comment style as the original (// vs /* */ vs #). Output ONLY the rewritten comment, no code outside the comment.\n\nFile: ${filePath}\nLanguage: ${language}\nStyle: ${style}\nSections: ${sections.join(", ")}\n\nOriginal TODO:\n${todoComment}\n\nNearby code context:\n${codeContext}\n`
+  const prompt =
+    `You are a senior prompt engineer. Rewrite TODOs into Codex-ready task briefs with:\n- Context\n- Goal\n- Steps (re-runnable, idempotent)\n- Constraints\n- Acceptance\nAlways preserve current runtime behavior and visible UI. Keep diffs minimal. Use the same comment style as the original (// vs /* */ vs #). Output ONLY the rewritten comment, no code outside the comment.\n\nFile: ${filePath}\nLanguage: ${language}\nStyle: ${style}\nSections: ${
+      sections.join(', ')
+    }\n\nOriginal TODO:\n${todoComment}\n\nNearby code context:\n${codeContext}\n`
   return prompt
 }
 
@@ -89,33 +92,88 @@ export async function renderPrompt({
  * @param cfg - Resolved configuration (model/endpoint).
  * @returns Rewritten comment text, or null on error.
  */
-export async function runLLM({ prompt, apiKey, cfg }: { prompt: string; apiKey: string; cfg: Cfg }) {
+export async function runLLM(
+  { prompt, apiKey, cfg }: { prompt: string; apiKey: string; cfg: Cfg },
+) {
   const body: Record<string, unknown> = {
     model: cfg.model,
     input: [
-      { role: "system", content: "Follow the provided prompt strictly. Return only the rewritten comment in the same comment style. Do not echo these instructions." },
-      { role: "user", content: prompt },
+      {
+        role: 'system',
+        content:
+          'Follow the provided prompt strictly. Return only the rewritten comment in the same comment style. Do not echo these instructions.',
+      },
+      { role: 'user', content: prompt },
     ],
   }
-  // Some models reject temperature; omit unless explicitly set via env/flags in future
 
-  const res = await fetch(cfg.endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  })
-
-  if (!res.ok) {
-    console.error("LLM error", res.status, await res.text())
-    return null
+  const attemptOnce = async () => {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), cfg.timeout)
+    try {
+      const res = await fetch(cfg.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        return { ok: false, status: res.status, text }
+      }
+      const data = await res.json()
+      const text = data.output_text || data.content?.[0]?.text || null
+      return { ok: true, text }
+    } catch (err) {
+      return { ok: false, error: err }
+    } finally {
+      clearTimeout(timeout)
+    }
   }
 
-  const data = await res.json()
-  // Using output_text for Responses API compatibility
-  const text = data.output_text || data.content?.[0]?.text || null
-  if (!text) return null
-  return text.trim()
+  const totalAttempts = 1 + (cfg.retries ?? 0)
+  for (let attempt = 1; attempt <= totalAttempts; attempt++) {
+    const res = await attemptOnce()
+    if (res.ok) {
+      if (!res.text) return null
+      return (res.text as string).trim()
+    }
+
+    // classify error
+    const status = (res as any).status as number | undefined
+    const err = (res as any).error
+    const isAbort = err &&
+      (err.name === 'AbortError' || err.code === 'AbortError')
+    const retriable = isAbort ||
+      (status !== undefined &&
+        (status === 408 || status === 429 || (status >= 500 && status <= 599)))
+
+    const detail = status
+      ? `status=${status}`
+      : (isAbort
+        ? `timeout after ${cfg.timeout}ms`
+        : (err?.message || 'network error'))
+    if (attempt < totalAttempts && retriable) {
+      const delay = Math.min(
+        5000,
+        (cfg.retryBackoffMs ?? 500) * Math.pow(2, attempt - 1),
+      )
+      const jitter = Math.floor(Math.random() * Math.min(200, delay / 2))
+      const sleepMs = delay + jitter
+      console.error(
+        `LLM request retry ${attempt}/${
+          totalAttempts - 1
+        } due to ${detail}; waiting ${sleepMs}ms...`,
+      )
+      await new Promise((r) => setTimeout(r, sleepMs))
+      continue
+    } else {
+      console.error(`LLM request failed (${detail}). No more retries.`)
+      return null
+    }
+  }
+  return null
 }
