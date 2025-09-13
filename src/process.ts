@@ -1,11 +1,11 @@
 /** Processing pipeline for per-file TODO expansion and rewrite. */
-import { Cfg } from './config.ts'
-import { detectTodos } from './todos.ts'
-import { renderPrompt, runLLM } from './prompt.ts'
-import { applyRewrites } from './rewrite.ts'
-import { formatFiles } from './format.ts'
-import { gray } from './log.ts'
-import { readCache, writeCache } from './cache.ts'
+import { Cfg } from "./config.ts"
+import { detectTodos } from "./todos.ts"
+import { renderPromptBatch, runLLM } from "./prompt.ts"
+import { applyRewrites } from "./rewrite.ts"
+import { formatFiles } from "./format.ts"
+import { gray } from "./log.ts"
+import { readCache, writeCache } from "./cache.ts"
 
 /**
  * Process a single file: detect TODOs, expand via LLM, rewrite in-place,
@@ -90,6 +90,10 @@ async function rewriteTodos({
   let text = content
   // Process from bottom to top to keep indices stable
   const sorted = [...todos].sort((a, b) => b.start - a.start)
+  const pending: any[] = []
+  const contexts: string[] = []
+  const fileKeys: string[] = []
+  const todoKeys: string[] = []
   for (const todo of sorted) {
     // Per-file timeout check
     if (Date.now() - fileStart > (cfg.perFileTimeoutMs ?? 120000)) {
@@ -102,38 +106,49 @@ async function rewriteTodos({
     }
 
     const codeContext = extractContext(text, todo, cfg.contextLines)
-    const rendered = await renderPrompt({
-      filePath: relPath,
-      language: langFromPath(relPath),
-      todoComment: todo.raw,
-      codeContext,
-      style: cfg.style,
-      sections: cfg.sections,
-    })
-
-    const key = cacheKey(relPath, todo.raw)
-    if (cfg.cache && cache[key]) {
-      // Skip LLM call; reuse cached output
-      const replaced = applyRewrites({
-        content: text,
-        todo,
-        newComment: cache[key],
-      })
+    const fileKey = cacheKey(relPath, todo.raw)
+    const tKey = todoKey(todo.raw)
+    const cached = cfg.cache ? (cache[fileKey] ?? cache[tKey]) : null
+    if (cached) {
+      if (cfg.cache && !cache[fileKey]) cache[fileKey] = cached
+      const replaced = applyRewrites({ content: text, todo, newComment: cached })
       text = replaced
       continue
     }
 
-    const out = await runLLM({ prompt: rendered, apiKey, cfg })
-    if (!out) continue
-    if (cfg.cache) cache[key] = out
-
-    const replaced = applyRewrites({
-      content: text,
-      todo,
-      newComment: out,
-    })
-    text = replaced
+    pending.push(todo)
+    contexts.push(codeContext)
+    fileKeys.push(fileKey)
+    todoKeys.push(tKey)
   }
+
+  if (pending.length) {
+    const rendered = await renderPromptBatch({
+      filePath: relPath,
+      language: langFromPath(relPath),
+      todos: pending.map((t, i) => ({ todoComment: t.raw, codeContext: contexts[i] })),
+      style: cfg.style,
+      sections: cfg.sections,
+    })
+
+    const out = await runLLM({ prompt: rendered, apiKey, cfg })
+    if (out) {
+      const parts = out.split("\n---\n")
+      if (parts.length === pending.length) {
+        for (let i = 0; i < pending.length; i++) {
+          const todo = pending[i]
+          const newComment = parts[i].trim()
+          if (cfg.cache) {
+            cache[fileKeys[i]] = newComment
+            cache[todoKeys[i]] = newComment
+          }
+          const replaced = applyRewrites({ content: text, todo, newComment })
+          text = replaced
+        }
+      }
+    }
+  }
+
   return text === content ? null : text
 }
 
@@ -171,7 +186,11 @@ function fnv1aHex(str: string): string {
  * @param raw - Raw TODO text.
  */
 function cacheKey(path: string, raw: string) {
-  return fnv1aHex(path + '::' + raw)
+  return "f:" + fnv1aHex(path + "::" + raw)
+}
+
+function todoKey(raw: string) {
+  return "t:" + fnv1aHex(raw)
 }
 
 /**
