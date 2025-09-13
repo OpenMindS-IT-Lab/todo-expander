@@ -122,28 +122,96 @@ todo-expand --context-lines=20 --concurrency=5 --staged
 
 ## Configuration
 
+### Quick Setup
+
+```bash
+# Initialize config in your project
+todo-expand init
+
+# View merged configuration
+todo-expand --print-config
+```
+
+### Configuration Files
+
+Todo-expander supports layered configuration with the following precedence (highest to lowest):
+
+1. **CLI flags** (e.g., `--style=verbose`)
+2. **Environment variables** (e.g., `TODO_EXPAND_STYLE=verbose`)
+3. **Project config** (`.todoexpandrc.json` in current directory)
+4. **Global config** (`~/.config/todo-expand/config.json`)
+5. **Default values**
+
+#### Project Configuration
+
+Create a `.todoexpandrc.json` file in your project root with IntelliSense support:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/OpenMindS-IT-Lab/todo-expander/main/schema/todoexpand.schema.json",
+  "style": "verbose",
+  "include": ["ts", "tsx", "js", "jsx"],
+  "exclude": ["node_modules", "build", "dist", ".git"],
+  "concurrency": 2,
+  "timeout": 30000,
+  "cache": true
+}
+```
+
+The `$schema` property enables:
+
+- ✅ **IntelliSense** in VS Code and other editors
+- ✅ **Type validation** and error highlighting
+- ✅ **Documentation on hover**
+- ✅ **Auto-completion** of property names and values
+
+#### Init Command
+
+Bootstrap configuration quickly with templates:
+
+```bash
+# Auto-detect project type and create config
+todo-expand init
+
+# Use specific template
+todo-expand init --template=monorepo
+todo-expand init --template=non-git
+
+# Skip package.json script updates
+todo-expand init --skip-package-json
+
+# Overwrite existing config
+todo-expand init --force
+```
+
+Available templates:
+
+- **base**: Standard single-repository project (default)
+- **monorepo**: Multi-language repository with higher concurrency
+- **non-git**: Non-git project with caching disabled
+
 ### Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `OPENAI_API_KEY` | Yes | - | OpenAI API key for LLM calls |
-| `OPENAI_MODEL` | No | `gpt-4o-mini` | Model to use |
-| `TODO_EXPAND_DRY` | No | - | Set to `1` for dry-run mode |
+| Variable          | Required | Default       | Description                  |
+| ----------------- | -------- | ------------- | ---------------------------- |
+| `OPENAI_API_KEY`  | Yes      | -             | OpenAI API key for LLM calls |
+| `OPENAI_MODEL`    | No       | `gpt-4o-mini` | Model to use                 |
+| `TODO_EXPAND_DRY` | No       | -             | Set to `1` for dry-run mode  |
 
 ### CLI Flags
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--staged` | Process only git-staged files | - |
-| `--dry-run`, `-n` | Preview changes without writing | `false` |
-| `--no-cache` | Skip response caching | `false` |
-| `--no-format` | Skip code formatting after rewrite | `false` |
-| `--include=ext1,ext2` | File extensions to include | `ts,tsx,js,jsx` |
-| `--exclude=dir1,dir2` | Directories to exclude | `node_modules,build,dist,.git` |
-| `--style=succinct\|verbose` | Output style preference | `succinct` |
-| `--sections=Context,Goal,Steps` | Custom section names | `Context,Goal,Steps,Constraints,Acceptance` |
-| `--context-lines=N` | Lines of code context to include | `12` |
-| `--concurrency=N` | Parallel LLM requests | `3` |
+| Flag                            | Description                        | Default                                     |
+| ------------------------------- | ---------------------------------- | ------------------------------------------- |
+| `--staged`                      | Process only git-staged files      | -                                           |
+| `--dry-run`, `-n`               | Preview changes without writing    | `false`                                     |
+| `--no-cache`                    | Skip response caching              | `false`                                     |
+| `--no-format`                   | Skip code formatting after rewrite | `false`                                     |
+| `--include=ext1,ext2`           | File extensions to include         | `ts,tsx,js,jsx`                             |
+| `--exclude=dir1,dir2`           | Directories to exclude             | `node_modules,build,dist,.git`              |
+| `--style=succinct\|verbose`     | Output style preference            | `succinct`                                  |
+| `--sections=Context,Goal,Steps` | Custom section names               | `Context,Goal,Steps,Constraints,Acceptance` |
+| `--context-lines=N`             | Lines of code context to include   | `12`                                        |
+| `--concurrency=N`               | Parallel LLM requests              | `3`                                         |
 
 ## TODO Detection
 

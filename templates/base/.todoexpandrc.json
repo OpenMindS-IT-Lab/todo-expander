@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenMindS-IT-Lab/todo-expander/main/schema/todoexpand.schema.json",
+  "style": "succinct",
+  "include": ["ts", "tsx", "js", "jsx"],
+  "exclude": ["node_modules", "build", "dist", ".git"],
+  "sections": ["Context", "Goal", "Steps", "Constraints", "Acceptance"],
+  "contextLines": 12,
+  "timeout": 45000,
+  "concurrency": 1,
+  "cache": true,
+  "format": true
+}

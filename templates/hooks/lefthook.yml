@@ -1,0 +1,35 @@
+# Lefthook configuration for todo-expander
+# Save as: .lefthook.yml or lefthook.yml
+
+pre-commit:
+  parallel: false
+  commands:
+    todo-expand:
+      # Only run if .no-todo-expand doesn't exist
+      skip:
+        - merge
+        - rebase
+      files: git diff --staged --name-only
+      glob: "*.{ts,tsx,js,jsx,py,go,rs}"
+      run: |
+        # Skip if explicitly disabled
+        if [ -f .no-todo-expand ]; then
+          echo "Skipping todo-expand (found .no-todo-expand)"
+          exit 0
+        fi
+        
+        # Check if todo-expand is available
+        if ! command -v todo-expand >/dev/null 2>&1; then
+          echo "Warning: todo-expand not found"
+          echo "Install: npm install -g todo-expander"
+          exit 0
+        fi
+        
+        echo "Expanding TODOs in staged files..."
+        if todo-expand --staged; then
+          git add -A
+          echo "TODO expansion complete"
+        else
+          echo "TODO expansion failed"
+          exit 1
+        fi

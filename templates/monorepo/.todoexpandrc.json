@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenMindS-IT-Lab/todo-expander/main/schema/todoexpand.schema.json",
+  "style": "verbose",
+  "include": ["ts", "tsx", "js", "jsx", "py", "go", "rs", "java"],
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    ".git",
+    "target",
+    "__pycache__",
+    "venv",
+    ".venv"
+  ],
+  "sections": [
+    "Context",
+    "Goal",
+    "Steps",
+    "Dependencies",
+    "Testing",
+    "Acceptance"
+  ],
+  "contextLines": 15,
+  "timeout": 60000,
+  "concurrency": 3,
+  "cache": true,
+  "format": true,
+  "verboseLogs": true
+}

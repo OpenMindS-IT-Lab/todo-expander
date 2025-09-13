@@ -20,14 +20,18 @@ import { join, relative } from 'https://deno.land/std@0.223.0/path/mod.ts'
 import { exists } from 'https://deno.land/std@0.223.0/fs/exists.ts'
 import { load as loadEnv } from 'https://deno.land/std@0.223.0/dotenv/mod.ts'
 
-import { loadConfig } from '../src/config.ts'
+import { loadConfig, printConfig } from '../src/config.ts'
 import { discoverTargets } from '../src/targets.ts'
 import { processFile } from '../src/process.ts'
+import { initProject } from '../src/init.ts'
 import { bold, gray, green, yellow } from '../src/log.ts'
 
 // Load environment from .env and .env.local if present (explicit order)
 try {
-  await loadEnv({ envPath: ['.env.local', '.env'], export: true })
+  await loadEnv({ envPath: '.env', export: true })
+} catch (_) {}
+try {
+  await loadEnv({ envPath: '.env.local', export: true })
 } catch (_) {}
 
 /**
@@ -69,6 +73,8 @@ function printHelp() {
 
 Usage:
   todo-expand [options] [paths...]
+  todo-expand --print-config
+  todo-expand init [--force] [--template=<type>] [--skip-package-json]
 
 Common:
   --staged               Operate on git-staged files
@@ -91,9 +97,25 @@ Common:
   --concurrency=<n>      Concurrent LLM requests (default: 1)
   --help, -h             Show this help
 
+Configuration:
+  --config=<path>        Use specific config file instead of automatic discovery
+  --print-config         Show resolved configuration and exit
+
+Init Command:
+  --force                Overwrite existing files during init
+  --template=<type>      Template type: base | monorepo | non-git (auto-detected if not specified)
+  --skip-package-json    Don't add npm script to package.json
+
 Notes:
   - A timeout causes a client-side abort; the server may still complete the request.
   - Retries apply to timeouts, 429, and 5xx responses with exponential backoff and jitter.
+
+Configuration Files (loaded in precedence order):
+  1. CLI flags (highest precedence)
+  2. Environment variables
+  3. Project: .todoexpandrc.json (nearest parent directory)
+  4. Global: ~/.config/todo-expand/config.json
+  5. Built-in defaults (lowest precedence)
 
 Environment:
   OPENAI_API_KEY         Required. Your OpenAI API key
@@ -105,12 +127,16 @@ Environment:
 Examples:
   todo-expand --staged --dry-run
   todo-expand --staged
+  todo-expand --print-config
+  todo-expand --config=./custom.json --staged
   todo-expand src/components/Game.tsx
+  todo-expand init
+  todo-expand init --template=monorepo --force
 
 Notes:
   - The tool loads .env and .env.local automatically when present.
   - The prompt is sourced from prompts/todo_expander.prompt.md.
-  - Cache stored at .git/.todoexpand-cache.json.
+  - Cache stored at .git/.todoexpand-cache.json or nearest .git directory.
 `
   console.log(help)
 }
@@ -122,6 +148,67 @@ Notes:
  * when API key is missing or on unhandled errors.
  */
 async function main() {
+  // Check for init command first (before parsing flags)
+  if (Deno.args[0] === 'init') {
+    const initArgs = Deno.args.slice(1) // Remove 'init' from args
+    const initFlags = parseArgs(initArgs, {
+      boolean: ['force', 'skip-package-json', 'help'],
+      string: ['template'],
+      alias: { h: 'help' },
+      default: {},
+    })
+
+    if (initFlags.help) {
+      console.log(
+        `todo-expand init - Initialize a project with todo-expander configuration
+
+Usage:
+  todo-expand init [options]
+
+Options:
+  --force                Overwrite existing files
+  --template=<type>      Template type: base | monorepo | non-git (auto-detected if not specified)
+  --skip-package-json    Don't add npm script to package.json
+  --help, -h             Show this help
+
+Templates:
+  base      Standard single-repository project (default)
+  monorepo  Multi-language monorepo with higher concurrency  
+  non-git   Non-git project (cache disabled)
+
+Examples:
+  todo-expand init
+  todo-expand init --template=monorepo
+  todo-expand init --force --skip-package-json
+`,
+      )
+      return
+    }
+
+    const template = initFlags.template as
+      | 'base'
+      | 'monorepo'
+      | 'non-git'
+      | undefined
+    if (template && !['base', 'monorepo', 'non-git'].includes(template)) {
+      console.error(
+        yellow(
+          `Invalid template: ${template}. Must be one of: base, monorepo, non-git`,
+        ),
+      )
+      Deno.exit(1)
+    }
+
+    await initProject({
+      cwd: Deno.cwd(),
+      force: initFlags.force || false,
+      template: template, // Will be auto-detected in initProject if undefined
+      skipPackageJson: initFlags['skip-package-json'] || false,
+    })
+    return
+  }
+
+  // Regular CLI parsing for non-init commands
   const flags = parseArgs(Deno.args, {
     boolean: [
       'staged',
@@ -130,6 +217,7 @@ async function main() {
       'no-format',
       'strict',
       'print',
+      'print-config',
       'help',
     ],
     string: [
@@ -145,6 +233,7 @@ async function main() {
       'retries',
       'retry-backoff-ms',
       'file-timeout',
+      'config',
     ],
     alias: { n: 'dry-run', h: 'help' },
     default: {},
@@ -158,9 +247,10 @@ async function main() {
   const dryRun = flags['dry-run'] || Deno.env.get('TODO_EXPAND_DRY') === '1'
   const cwd = Deno.cwd()
 
-  // Load config (repo-level and global)
-  const cfg = await loadConfig({
+  // Load config (with new config file system)
+  const configResult = await loadConfig({
     cwd,
+    configPath: flags.config,
     cli: {
       include: flags.include,
       exclude: flags.exclude,
@@ -186,6 +276,30 @@ async function main() {
         : undefined,
     },
   })
+
+  const cfg = configResult.config
+
+  // Handle configuration warnings and errors
+  if (configResult.warnings.length > 0) {
+    for (const warning of configResult.warnings) {
+      console.warn(yellow(`Warning: ${warning}`))
+    }
+  }
+
+  if (configResult.errors.length > 0) {
+    for (const error of configResult.errors) {
+      console.error(yellow(`Config Error: ${error}`))
+    }
+    if (cfg.strict) {
+      Deno.exit(1)
+    }
+  }
+
+  // Handle --print-config flag
+  if (flags['print-config']) {
+    console.log(printConfig(cfg, configResult.sources))
+    return
+  }
 
   const apiKey = Deno.env.get('OPENAI_API_KEY')
   if (!apiKey) {
@@ -247,7 +361,8 @@ async function main() {
         }
       }
     } catch (err) {
-      console.error(yellow(`[error] ${rel}: ${err?.message || err}`))
+      const error = err as Error
+      console.error(yellow(`[error] ${rel}: ${error?.message || error}`))
     }
   }
 

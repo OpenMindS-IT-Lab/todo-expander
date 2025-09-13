@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenMindS-IT-Lab/todo-expander/main/schema/todoexpand.schema.json",
+  "style": "verbose",
+  "include": ["ts", "tsx", "js", "jsx", "md"],
+  "contextLines": 15,
+  "timeout": 60000
+}
