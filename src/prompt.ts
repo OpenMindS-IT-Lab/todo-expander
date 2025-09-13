@@ -1,6 +1,14 @@
 import { Cfg } from './config.ts'
 import { join } from 'https://deno.land/std@0.223.0/path/mod.ts'
 
+function minifyTemplate(t: string): string {
+  const lines = t
+    .split('\n')
+    .filter((ln) => !ln.trim().startsWith('```') && !ln.trim().startsWith('#'))
+    .map((ln) => ln.replace(/\s+/g, ' ').trim())
+  return lines.join('\n').replace(/\n{2,}/g, '\n').trim()
+}
+
 /**
  * Load the external prompt template if present; otherwise null to use fallback.
  * @returns Template string or null when not found.
@@ -8,12 +16,12 @@ import { join } from 'https://deno.land/std@0.223.0/path/mod.ts'
 async function loadTemplate(): Promise<string | null> {
   // Prefer external prompt file for auditability
   const candidates = [
-    join(Deno.cwd(), 'prompts/todo_expander.prompt.md'),
+    join(Deno.cwd(), "prompts/todo_expander.compact.prompt.md"),
   ]
   for (const p of candidates) {
     try {
       const text = await Deno.readTextFile(p)
-      return text
+      return minifyTemplate(text)
     } catch (_) {
       // continue
     }
@@ -64,25 +72,75 @@ export async function renderPrompt({
   sections: string[]
 }): Promise<string> {
   const tpl = await loadTemplate()
-  const vars = {
-    file_path: filePath,
-    language: language || '',
-    todo_comment: todoComment,
-    code_context: codeContext,
-    style: style,
-    sections: sections.join(', '),
-  } as Record<string, string>
+  const defaultSections = ["Context", "Goal", "Steps", "Constraints", "Acceptance"]
+  const isDefaultSections =
+    sections.length === defaultSections.length &&
+    sections.every((s, i) => s.trim().toLowerCase() === defaultSections[i].toLowerCase())
 
-  if (tpl) {
-    return fillTemplate(tpl, vars)
-  }
+  const parts: string[] = []
+  if (tpl) parts.push(tpl)
+  else parts.push("Task: Rewrite the TODO into a structured brief as a comment. Return only the rewritten comment.")
+  parts.push(`File: ${filePath}`)
+  if (language) parts.push(`Language: ${language}`)
+  if (style !== "succinct") parts.push(`Style: ${style}`)
+  if (!isDefaultSections) parts.push(`Sections override: ${sections.join(", ")}`)
+  parts.push("Original TODO:", todoComment, "", "Nearby code (context only):", codeContext)
+  return parts.join("\n")
+}
 
-  // Fallback minimal instructions if template missing
-  const prompt =
-    `You are a senior prompt engineer. Rewrite TODOs into Codex-ready task briefs with:\n- Context\n- Goal\n- Steps (re-runnable, idempotent)\n- Constraints\n- Acceptance\nAlways preserve current runtime behavior and visible UI. Keep diffs minimal. Use the same comment style as the original (// vs /* */ vs #). Output ONLY the rewritten comment, no code outside the comment.\n\nFile: ${filePath}\nLanguage: ${language}\nStyle: ${style}\nSections: ${
-      sections.join(', ')
-    }\n\nOriginal TODO:\n${todoComment}\n\nNearby code context:\n${codeContext}\n`
-  return prompt
+  const parts: string[] = []
+  if (tpl) parts.push(tpl)
+  else parts.push("Task: Rewrite the TODO into a structured brief as a comment. Return only the rewritten comment.")
+  parts.push(`File: ${filePath}`)
+  if (language) parts.push(`Language: ${language}`)
+  if (style !== "succinct") parts.push(`Style: ${style}`)
+  if (!isDefaultSections) parts.push(`Sections override: ${sections.join(", ")}`)
+  parts.push("Original TODO:", todoComment, "", "Nearby code (context only):", codeContext)
+  return parts.join("\n")
+}
+
+/** Build a batched prompt for multiple TODOs within the same file. */
+export async function renderPromptBatch({
+  filePath,
+  language,
+  todos,
+  style,
+  sections,
+}: {
+  filePath: string
+  language: string
+  todos: { todoComment: string; codeContext: string }[]
+  style: Cfg["style"]
+  sections: string[]
+}): Promise<string> {
+  const tpl = await loadTemplate()
+  const defaultSections = ["Context", "Goal", "Steps", "Constraints", "Acceptance"]
+  const isDefaultSections =
+    sections.length === defaultSections.length &&
+    sections.every((s, i) => s.trim().toLowerCase() === defaultSections[i].toLowerCase())
+
+  const parts: string[] = []
+  if (tpl) parts.push(tpl)
+  else parts.push(
+    "Task: Rewrite the TODO into a structured brief as a comment. Return only the rewritten comment.",
+  )
+  parts.push(`File: ${filePath}`)
+  if (language) parts.push(`Language: ${language}`)
+  if (style !== "succinct") parts.push(`Style: ${style}`)
+  if (!isDefaultSections) parts.push(`Sections override: ${sections.join(", ")}`)
+  parts.push("Return rewritten TODOs separated by --- on their own line in the same order.")
+
+  todos.forEach((t, idx) => {
+    parts.push(
+      `TODO ${idx + 1}:`,
+      t.todoComment,
+      "",
+      "Nearby code (context only):",
+      t.codeContext,
+    )
+    if (idx < todos.length - 1) parts.push("---")
+  })
+  return parts.join("\n")
 }
 
 /**
@@ -99,11 +157,11 @@ export async function runLLM(
     model: cfg.model,
     input: [
       {
-        role: 'system',
+        role: "system",
         content:
-          'Follow the provided prompt strictly. Return only the rewritten comment in the same comment style. Do not echo these instructions.',
+          "You are a senior prompt engineer. Rewrite any inline TODO into a structured brief with sections: Context; Goal; Steps (re-runnable & idempotent); Constraints; Acceptance. Preserve current runtime behavior and visible UI. Keep the smallest possible diff; do not alter surrounding code or identifiers. Use the same comment style as the original (// vs /* */ vs #). Output only the rewritten comment in the same comment style; no extra text.",
       },
-      { role: 'user', content: prompt },
+      { role: "user", content: prompt },
     ],
   }
 

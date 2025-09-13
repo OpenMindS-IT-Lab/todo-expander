@@ -20,11 +20,12 @@ src/todos.ts
 src/process.ts
 
 - `processFile({ absPath, relPath, cfg, apiKey, dryRun })`: High-level per-file workflow; reads/writes content, formats, and tracks stats.
-- Internal helpers for bottom-up TODO rewriting, context extraction, cache keys, and language inference.
+- Internal helpers for bottom-up TODO rewriting, batched LLM calls, cross-file cache reuse, context extraction, cache keys, and language inference.
 
 src/prompt.ts
 
 - `renderPrompt(...)`: Prefer external template; fallback to a compact inline prompt.
+- `renderPromptBatch(...)`: Build one prompt for multiple TODOs with stable separators.
 - `runLLM(...)`: Call OpenAI Responses API and extract text.
 
 src/rewrite.ts
