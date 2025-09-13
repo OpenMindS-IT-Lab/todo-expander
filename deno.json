@@ -8,8 +8,13 @@
     "githooks:install": "chmod +x .githooks/pre-commit && git config core.hooksPath .githooks"
   },
   "fmt": {
-    "include": ["src/", "scripts/"],
-    "exclude": ["dist/"],
+    "include": [
+      "src/",
+      "scripts/"
+    ],
+    "exclude": [
+      "dist/"
+    ],
     "indentWidth": 2,
     "lineWidth": 80,
     "proseWrap": "preserve",

@@ -42,6 +42,7 @@ The codebase follows a modular functional architecture:
 ## Development Commands
 
 ### Essential Commands
+
 ```bash
 # Run on staged files
 deno task todo:staged
@@ -60,6 +61,7 @@ deno task lint
 ```
 
 ### Development Testing
+
 ```bash
 # Dry run on staged files (no file modifications)
 deno run -A bin/todo-expand.ts --staged --dry-run
@@ -74,11 +76,13 @@ OPENAI_MODEL=gpt-4 deno run -A bin/todo-expand.ts --staged
 ## Configuration
 
 ### Environment Variables
+
 - `OPENAI_API_KEY` (required): OpenAI API key for LLM calls
 - `OPENAI_MODEL` (optional): Model to use (default: `gpt-4o-mini`)
 - `TODO_EXPAND_DRY` (optional): Set to `1` for dry-run mode
 
 ### CLI Flags
+
 - `--staged`: Process only git-staged files
 - `--dry-run` / `-n`: Preview changes without writing
 - `--no-cache`: Skip response caching
@@ -88,15 +92,21 @@ OPENAI_MODEL=gpt-4 deno run -A bin/todo-expand.ts --staged
 - `--style=succinct|verbose`: Output style preference
 - `--sections=Context,Goal,Steps`: Custom section names
 - `--context-lines=N`: Lines of code context to include (default: 12)
-- `--concurrency=N`: Parallel LLM requests (default: 3)
+- `--timeout=<ms>`: Per-request timeout (default: 45000)
+- `--retries=<n>`: Retry attempts for timeout/429/5xx (default: 2)
+- `--retry-backoff-ms=<n>`: Base backoff in ms for retries (default: 500)
+- `--file-timeout=<ms>`: Abort processing a file after this many ms (default: 120000)
+- `--concurrency=N`: Parallel LLM requests (default: 1)
 
 ### Future Config Files (TODO in codebase)
+
 - `~/.config/todo-expand/config.json`: Global configuration
 - `.todoexpandrc.json`: Per-repository configuration
 
 ## TODO Detection Patterns
 
 The tool detects these TODO formats:
+
 - Single-line: `// TODO: description`, `# TODO: description`
 - Block comments: `/* TODO: multi-line description */`
 - Case-insensitive matching for "TODO"
@@ -105,19 +115,24 @@ The tool detects these TODO formats:
 ## Warp Integration
 
 ### Pre-built Workflows
+
 The `warp/workflows/` directory contains ready-to-use Warp workflows:
+
 - `expand-todos-staged.yaml`: Process staged files
 - `expand-todos-file.yaml`: Process specific file (requires ARG environment variable)
 - `expand-todos-dry.yaml`: Dry-run preview
 - `check-raw-todos.yaml`: CI-style validation
 
 ### Notebook Integration
+
 `warp/AI_Workflow_TODO_Expander_Notebook.md` contains runnable commands for common workflows, including:
+
 - API key verification
 - Global git hook setup
 - CI-style TODO validation
 
 ### Usage with Warp
+
 1. Set `OPENAI_API_KEY` in your environment
 2. Run workflows via Warp's workflow picker
 3. Use `ARG=path/to/file` for file-specific workflows
@@ -127,7 +142,7 @@ The `warp/workflows/` directory contains ready-to-use Warp workflows:
 When modifying the core logic:
 
 1. **Test TODO Detection**: Verify `src/todos.ts` with various comment styles
-2. **Test Context Extraction**: Ensure proper line extraction in `src/process.ts`  
+2. **Test Context Extraction**: Ensure proper line extraction in `src/process.ts`
 3. **Test Cache Behavior**: Verify cache hits/misses with identical TODO comments
 4. **Test Rewriting Logic**: Ensure `src/rewrite.ts` preserves file structure and handles edge cases
 5. **Integration Testing**: Run against real files with mixed TODO formats
@@ -135,6 +150,7 @@ When modifying the core logic:
 ## Permissions
 
 The CLI requires extensive permissions (`-A`) or specifically:
+
 - `--allow-read`: Read source files and config
 - `--allow-write`: Write modified files and cache
 - `--allow-env`: Access environment variables (API keys, model selection)
