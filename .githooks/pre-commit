@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Pre-commit: format staged files with deno fmt
+# - Filters to TS/JS/JSON/MD
+# - Re-stages formatted files so commit includes changes
+
+# Opt-out toggle
+if [ -f .no-format-hook ]; then
+  exit 0
+fi
+
+# Collect staged files (Added/Copied/Modified/Renamed), NUL-delimited
+filtered=()
+while IFS= read -r -d $'\0' f; do
+  case "$f" in
+    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.json|*.md)
+      filtered+=("$f")
+      ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+# Nothing to do
+if [ ${#filtered[@]} -eq 0 ]; then
+  exit 0
+fi
+
+# Require deno for formatting
+if ! command -v deno >/dev/null 2>&1; then
+  echo "deno not found; skipping formatting hook" >&2
+  exit 0
+fi
+
+# Format and re-stage
+deno fmt --quiet "${filtered[@]}"
+git add -- "${filtered[@]}"
+
+exit 0
+

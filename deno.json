@@ -1,0 +1,16 @@
+{
+  "tasks": {
+    "todo:staged": "deno run -A bin/todo-expand.ts --staged",
+    "todo:file": "deno run -A bin/todo-expand.ts",
+    "build:cli": "deno compile -A --output dist/todo-expand bin/todo-expand.ts",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "githooks:install": "chmod +x .githooks/pre-commit && git config core.hooksPath .githooks"
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": false
+  }
+}
