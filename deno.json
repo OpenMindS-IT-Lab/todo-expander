@@ -1,6 +1,6 @@
 {
   "name": "@openminds-it-lab/todo-expander",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "exports": {
     ".": "./src/mod.ts",
     "./config": "./src/config.ts",
