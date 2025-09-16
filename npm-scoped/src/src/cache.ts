@@ -7,10 +7,10 @@ import * as dntShim from "../_dnt.shims.js";
 
 export async function readCache(path: string): Promise<Record<string, string>> {
   try {
-    const text = await dntShim.Deno.readTextFile(path)
-    return JSON.parse(text)
+    const text = await dntShim.Deno.readTextFile(path);
+    return JSON.parse(text);
   } catch {
-    return {}
+    return {};
   }
 }
 
@@ -21,11 +21,11 @@ export async function readCache(path: string): Promise<Record<string, string>> {
  */
 export async function writeCache(path: string, data: Record<string, string>) {
   try {
-    await dntShim.Deno.mkdir(new URL('./', `file://${path}`).pathname, {
+    await dntShim.Deno.mkdir(new URL("./", `file://${path}`).pathname, {
       recursive: true,
-    })
+    });
   } catch {
     /* ignore */
   }
-  await dntShim.Deno.writeTextFile(path, JSON.stringify(data, null, 2))
+  await dntShim.Deno.writeTextFile(path, JSON.stringify(data, null, 2));
 }
