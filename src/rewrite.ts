@@ -1,5 +1,3 @@
-import { gray } from './log.ts'
-
 /**
  * Replace a detected TODO in `content` with the `newComment`, normalizing
  * the output to match the original comment style (line vs block).
@@ -23,7 +21,7 @@ export function applyRewrites({
     marker: string
   }
   newComment: string
-}) {
+}): string {
   const lines = content.split('\n')
 
   // Normalize output to original style

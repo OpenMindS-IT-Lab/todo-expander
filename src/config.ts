@@ -1,5 +1,5 @@
-import { exists } from 'https://deno.land/std@0.223.0/fs/exists.ts'
-import { dirname, join } from 'https://deno.land/std@0.223.0/path/mod.ts'
+import { exists } from '@std/fs'
+import { dirname, join } from '@std/path'
 
 /**
  * Global configuration resolved from CLI flags, env, config files, and defaults.
@@ -171,7 +171,7 @@ function validateConfig(raw: unknown, source: string): ConfigValidation {
       case 'exclude':
       case 'sections':
         if (Array.isArray(value) && value.every((v) => typeof v === 'string')) {
-          ;(config as any)[key] = value as string[]
+          ;(config as Record<string, unknown>)[key] = value as string[]
         } else {
           errors.push(`${source}: '${key}' must be an array of strings`)
         }
@@ -268,7 +268,7 @@ function mergeConfigs(...configs: ConfigFile[]): ConfigFile {
   for (const config of configs) {
     for (const [key, value] of Object.entries(config)) {
       if (value !== undefined) {
-        result[key as keyof ConfigFile] = value as any
+        result[key as keyof ConfigFile] = value as ConfigFile[keyof ConfigFile]
       }
     }
   }
@@ -489,17 +489,19 @@ export async function loadConfig({
   if (cli.format !== undefined) cliConfig.format = cli.format
   if (cli.strict !== undefined) cliConfig.strict = cli.strict
   if (cli.print !== undefined) cliConfig.print = cli.print
-  if ((cli as any).verboseLogs !== undefined) {
-    cliConfig.verboseLogs = (cli as any).verboseLogs
+  if ((cli as { verboseLogs?: boolean }).verboseLogs !== undefined) {
+    cliConfig.verboseLogs = (cli as { verboseLogs: boolean }).verboseLogs
   }
-  if ((cli as any).retries !== undefined) {
-    cliConfig.retries = (cli as any).retries
+  if ((cli as { retries?: number }).retries !== undefined) {
+    cliConfig.retries = (cli as { retries: number }).retries
   }
-  if ((cli as any).retryBackoffMs !== undefined) {
-    cliConfig.retryBackoffMs = (cli as any).retryBackoffMs
+  if ((cli as { retryBackoffMs?: number }).retryBackoffMs !== undefined) {
+    cliConfig.retryBackoffMs =
+      (cli as { retryBackoffMs: number }).retryBackoffMs
   }
-  if ((cli as any).perFileTimeoutMs !== undefined) {
-    cliConfig.perFileTimeoutMs = (cli as any).perFileTimeoutMs
+  if ((cli as { perFileTimeoutMs?: number }).perFileTimeoutMs !== undefined) {
+    cliConfig.perFileTimeoutMs =
+      (cli as { perFileTimeoutMs: number }).perFileTimeoutMs
   }
 
   // Step 8: Final merge and create resolved configuration

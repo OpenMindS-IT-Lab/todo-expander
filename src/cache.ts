@@ -22,6 +22,8 @@ export async function writeCache(path: string, data: Record<string, string>) {
     await Deno.mkdir(new URL('./', `file://${path}`).pathname, {
       recursive: true,
     })
-  } catch {}
+  } catch {
+    /* ignore */
+  }
   await Deno.writeTextFile(path, JSON.stringify(data, null, 2))
 }
