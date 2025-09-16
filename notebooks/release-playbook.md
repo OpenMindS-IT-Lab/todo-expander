@@ -2,6 +2,49 @@
 
 This notebook contains key commands and procedures for managing releases of todo-expander.
 
+## 🚀 Automated Releases with Release Please
+
+**Release Please** is now configured to automate version management, changelog generation, and publishing.
+
+### How It Works
+
+1. **Conventional Commits**: Use conventional commit messages (feat:, fix:, docs:, etc.)
+2. **Automated PRs**: Release Please creates PRs with version bumps and changelog updates
+3. **Release Automation**: When PR is merged, automatic publishing to JSR, NPM, and GitHub Releases
+4. **Binary Building**: Existing release-binaries.yml workflow still handles cross-platform binaries
+
+### Conventional Commit Types
+
+- `feat:` → Minor version bump, appears in "Features" section
+- `fix:` → Patch version bump, appears in "Bug Fixes" section
+- `docs:` → Patch version bump, appears in "Documentation" section
+- `refactor:` → Patch version bump, appears in "Code Refactoring" section
+- `perf:` → Patch version bump, appears in "Performance Improvements" section
+- `test:` → Patch version bump, appears in "Tests" section
+- `build:`, `ci:` → Patch version bump, appears in respective sections
+- `chore:` → Patch version bump, hidden from changelog
+- `BREAKING CHANGE:` → Major version bump (add to commit footer)
+
+### Release Please Workflow
+
+```bash
+# 1. Make changes with conventional commits
+git commit -m "feat: add new awesome feature"
+git push origin main
+
+# 2. Release Please automatically creates a PR with:
+#    - Updated version in deno.json
+#    - Updated CHANGELOG.md with new entries
+#    - Proper semantic versioning
+
+# 3. Review and merge the Release Please PR
+# 4. Upon merge, automatic publishing occurs:
+#    - JSR: deno publish
+#    - NPM: npm publish
+#    - GitHub Release: created with changelog
+#    - Binaries: built via separate workflow
+```
+
 ## Release Process Overview
 
 ### 1. Pre-release Preparation
@@ -114,12 +157,23 @@ Current workflow environment:
 - `DENO_VERSION`: 2.x (updated from original 1.x)
 - Binary naming: `todo-expand-v{version}-{os}-{arch}`
 
-## Package Information
+## 📦 Package Information
+
+### Primary Packages
 
 - **CLI Binary**: `todo-expand`
 - **Package Name**: `todo-expander` (all registries)
 - **JSR**: `@saladin/todo-expander`
 - **NPM**: `todo-expander` (unscoped, reserved)
+- **GitHub**: Binary releases at `v{version}` tags
+
+### Organization Scopes (Phase 2)
+
+- **NPM Organization**: `@openminds-it-lab` (configured)
+- **JSR Scope**: `@openminds-it-lab` (available for future use)
+- **Future Scoped Packages**:
+  - `@openminds-it-lab/todo-expander` (NPM alias/mirror)
+  - `@openminds-it-lab/todo-expander` (JSR team package)
 - **GitHub**: Binary releases at `v{version}` tags
 
 ## Troubleshooting
@@ -153,16 +207,40 @@ Consider implementing:
 
 ## Quick Reference Commands
 
+### Automated Releases (Recommended)
+
 ```bash
-# Full release process
+# 1. Make changes with conventional commits
+git commit -S -m "feat: add awesome new feature"
+git push origin main
+
+# 2. Wait for Release Please PR, review and merge
+# 3. Automated publishing happens on merge
+
+# Manual verification after automated release
+gh release list
+npm view todo-expander version
+deno eval 'import * as t from "jsr:@saladin/todo-expander"; console.log("OK")'
+```
+
+### Manual Releases (Legacy)
+
+```bash
+# Full manual release process (use only if automated release fails)
 deno task fmt && deno task lint
 deno publish --dry-run && deno publish
 deno task build:npm && cd npm && npm publish --access public && cd ..
 git tag -s "v$(jq -r .version deno.json)" -m "Release v$(jq -r .version deno.json)"
 git push origin "v$(jq -r .version deno.json)"
+```
 
-# Verification
-gh release list
-npm view todo-expander version
-deno eval 'import * as t from "jsr:@saladin/todo-expander"; console.log("OK")'
+### Organization Scope Commands
+
+```bash
+# NPM organization management
+npm org ls @openminds-it-lab
+npm org set @openminds-it-lab <username> <role>
+
+# Future JSR scope setup (when available)
+# deno publish --scope=@openminds-it-lab
 ```

@@ -1,0 +1,85 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  DENO_VERSION: v2.x
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Run Release Please
+        uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: node
+          package-name: todo-expander
+          changelog-sections: |
+            [
+              {"type": "feat", "section": "Features"},
+              {"type": "fix", "section": "Bug Fixes"},
+              {"type": "perf", "section": "Performance Improvements"},
+              {"type": "revert", "section": "Reverts"},
+              {"type": "docs", "section": "Documentation"},
+              {"type": "style", "section": "Styles"},
+              {"type": "refactor", "section": "Code Refactoring"},
+              {"type": "test", "section": "Tests"},
+              {"type": "build", "section": "Build System"},
+              {"type": "ci", "section": "Continuous Integration"},
+              {"type": "chore", "section": "Miscellaneous", "hidden": true}
+            ]
+
+  # Publish to JSR when a release is created
+  publish-jsr:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: needs.release-please.outputs.releases_created == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+      - name: Publish to JSR
+        run: deno publish
+        env:
+          # JSR_TOKEN: ${{ secrets.JSR_TOKEN }}  # Uncomment when token is available
+
+  # Publish to NPM when a release is created  
+  publish-npm:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: needs.release-please.outputs.releases_created == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Build NPM package
+        run: deno task build:npm
+      - name: Publish to NPM
+        run: cd npm && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Note: Binary releases are still handled by the existing release-binaries.yml workflow
+  # which triggers on tag creation. This provides a backup mechanism and keeps the
+  # binary building separate from package publishing for reliability.

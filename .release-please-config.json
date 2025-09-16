@@ -1,0 +1,42 @@
+{
+  "release-type": "node",
+  "packages": {
+    ".": {
+      "package-name": "todo-expander",
+      "component": "todo-expander",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "node",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": false,
+      "versioning": "default",
+      "prerelease": false,
+      "draft": false,
+      "prerelease-type": "alpha",
+      "include-v-in-tag": true,
+      "tag-separator": "",
+      "separate-pull-requests": false,
+      "skip-github-release": false,
+      "draft-pull-request": false,
+      "extra-files": [
+        "deno.json"
+      ],
+      "version-file": "deno.json"
+    }
+  },
+  "changelog-sections": [
+    { "type": "feat", "section": "Features" },
+    { "type": "feature", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "perf", "section": "Performance Improvements" },
+    { "type": "revert", "section": "Reverts" },
+    { "type": "docs", "section": "Documentation" },
+    { "type": "style", "section": "Styles" },
+    { "type": "refactor", "section": "Code Refactoring" },
+    { "type": "test", "section": "Tests" },
+    { "type": "build", "section": "Build System" },
+    { "type": "ci", "section": "Continuous Integration" },
+    { "type": "chore", "section": "Miscellaneous", "hidden": true }
+  ],
+  "release-search-depth": 400,
+  "commit-search-depth": 500
+}
