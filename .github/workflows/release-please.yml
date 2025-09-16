@@ -59,10 +59,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Build NPM package
         run: deno task build:npm
-      - name: Publish to NPM
-        run: cd npm && npm publish --access public
+      - name: Publish to NPM (Organization Scope)
+        run: cd npm-scoped && npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }
 
   # Note: Binary releases are still handled by the existing release-binaries.yml workflow
   # which triggers on tag creation. This provides a backup mechanism and keeps the

@@ -2,8 +2,8 @@
   "release-type": "node",
   "packages": {
     ".": {
-      "package-name": "todo-expander",
-      "component": "todo-expander",
+      "package-name": "@openminds-it-lab/todo-expander",
+      "component": "@openminds-it-lab/todo-expander",
       "changelog-path": "CHANGELOG.md",
       "release-type": "node",
       "bump-minor-pre-major": false,

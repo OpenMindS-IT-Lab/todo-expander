@@ -51,31 +51,62 @@ TODO Expander is a Deno-based CLI tool that automatically converts plain TODO co
 
 ### Prerequisites
 
-- [Deno](https://deno.land/) (v1.30 or later)
 - OpenAI API key
+- Choose your runtime:
+  - **Deno**: [Deno](https://deno.land/) (v2.0 or later) for JSR
+  - **Node.js**: Node.js (v18 or later) for NPM
 
-### Quick Install
+### Package Managers (Recommended)
+
+#### JSR (Deno)
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd todo-expander
+# Import as library
+deno add jsr:@openminds-it-lab/todo-expander
 
-# Build the CLI binary
-deno task build:cli
+# Use in your code
+import { processFile } from "jsr:@openminds-it-lab/todo-expander";
+```
 
-# Add to PATH (optional)
-sudo cp dist/todo-expand /usr/local/bin/
+#### NPM (Node.js)
+
+```bash
+# Install globally for CLI access
+npm install -g @openminds-it-lab/todo-expander
+todo-expand --help
+
+# Or install locally in your project
+npm install @openminds-it-lab/todo-expander
+npx todo-expand --help
+```
+
+#### GitHub Releases (Cross-platform binaries)
+
+```bash
+# Download binary for your platform from:
+# https://github.com/OpenMindS-IT-Lab/todo-expander/releases
+
+# macOS ARM64 example:
+wget https://github.com/OpenMindS-IT-Lab/todo-expander/releases/latest/download/todo-expand-v0.1.0-macos-arm64
+chmod +x todo-expand-v0.1.0-macos-arm64
+sudo mv todo-expand-v0.1.0-macos-arm64 /usr/local/bin/todo-expand
 ```
 
 ### Development Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/OpenMindS-IT-Lab/todo-expander.git
+cd todo-expander
+
 # Run directly with Deno
 deno run -A bin/todo-expand.ts --help
 
 # Or use the task runner
 deno task todo:file path/to/file.ts
+
+# Build local binary
+deno task build:cli
 ```
 
 ## Usage

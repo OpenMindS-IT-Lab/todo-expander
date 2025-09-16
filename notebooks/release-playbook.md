@@ -120,18 +120,19 @@ rm todo-expand-*-macos-arm64
 #### Verify NPM Package
 
 ```bash
-# Check published version
-npm view todo-expander version
+# Check published version (organization scope)
+npm view @openminds-it-lab/todo-expander version
 
-# Test installation (may have JSR dependency issues - expected)
-npx -y todo-expander --help || echo "NPM package name reserved successfully"
+# Test installation
+npm install -g @openminds-it-lab/todo-expander
+todo-expand --help
 ```
 
 #### Verify JSR Package
 
 ```bash
-# Test library import
-deno eval 'import * as todoExpander from "jsr:@saladin/todo-expander"; console.log("Available exports:", Object.keys(todoExpander))'
+# Test library import (organization scope)
+deno eval 'import * as todoExpander from "jsr:@openminds-it-lab/todo-expander"; console.log("Available exports:", Object.keys(todoExpander))'
 ```
 
 ## GitHub Actions Workflows
@@ -159,22 +160,19 @@ Current workflow environment:
 
 ## 📦 Package Information
 
-### Primary Packages
+### Organization Packages (Primary)
 
 - **CLI Binary**: `todo-expand`
-- **Package Name**: `todo-expander` (all registries)
-- **JSR**: `@saladin/todo-expander`
-- **NPM**: `todo-expander` (unscoped, reserved)
+- **JSR**: `@openminds-it-lab/todo-expander`
+- **NPM**: `@openminds-it-lab/todo-expander`
 - **GitHub**: Binary releases at `v{version}` tags
 
-### Organization Scopes (Phase 2)
+### Legacy Packages (Deprecated)
 
-- **NPM Organization**: `@openminds-it-lab` (configured)
-- **JSR Scope**: `@openminds-it-lab` (available for future use)
-- **Future Scoped Packages**:
-  - `@openminds-it-lab/todo-expander` (NPM alias/mirror)
-  - `@openminds-it-lab/todo-expander` (JSR team package)
-- **GitHub**: Binary releases at `v{version}` tags
+- **JSR Personal**: `@saladin/todo-expander` (deprecated)
+- **NPM Unscoped**: `todo-expander` (deprecated)
+
+**Note**: All new installations should use the organization scoped packages above.
 
 ## Troubleshooting
 
@@ -219,8 +217,8 @@ git push origin main
 
 # Manual verification after automated release
 gh release list
-npm view todo-expander version
-deno eval 'import * as t from "jsr:@saladin/todo-expander"; console.log("OK")'
+npm view @openminds-it-lab/todo-expander version
+deno eval 'import * as t from "jsr:@openminds-it-lab/todo-expander"; console.log("OK")'
 ```
 
 ### Manual Releases (Legacy)
