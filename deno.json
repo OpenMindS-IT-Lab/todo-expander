@@ -1,4 +1,13 @@
 {
+  "name": "todo-expander",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/mod.ts",
+    "./config": "./src/config.ts",
+    "./process": "./src/process.ts",
+    "./prompt": "./src/prompt.ts",
+    "./rewrite": "./src/rewrite.ts"
+  },
   "tasks": {
     "todo:staged": "deno run -A bin/todo-expand.ts --staged",
     "todo:file": "deno run -A bin/todo-expand.ts",
@@ -6,15 +15,23 @@
     "build:npm": "deno run -A scripts/build_npm.ts",
     "pack:npm": "cd npm && npm pack",
     "publish:npm": "cd npm && npm publish",
-    "schema:validate": "deno run --allow-read --allow-net scripts/validate-schema.ts",
+    "publish:jsr": "deno publish",
+    "schema:validate": "deno run -A scripts/validate-schema.ts",
     "fmt": "deno fmt",
-    "lint": "deno lint",
+    "fmt:check": "deno fmt --check",
+    "lint": "deno lint --fix",
+    "lint:check": "deno lint",
     "githooks:install": "chmod +x .githooks/pre-commit && git config core.hooksPath .githooks",
     "setup:maintenance": "chmod +x run/maintenance_setup.sh && ./run/maintenance_setup.sh",
     "health:check": "deno run -A bin/todo-expand.ts --help && echo '✅ Basic functionality verified'",
     "dev:test": "deno run -A bin/todo-expand.ts --print-config",
-    "precommit": "deno fmt && deno lint --fix",
-    "prepush": "deno fmt && deno lint"
+    "release:prepare": "deno task fmt && deno task lint && deno task schema:validate && deno task build:cli && deno task health:check",
+    "webhook:set": "bash run/webhooks.sh set",
+    "webhook:delete": "bash run/webhooks.sh delete",
+    "precommit": "deno task fmt:staged && deno task lint:staged",
+    "prepush": "deno task fmt && deno task lint",
+    "fmt:staged": "git diff --name-only --cached --diff-filter=ACM | xargs -r deno fmt",
+    "lint:staged": "git diff --name-only --cached --diff-filter=ACM | xargs -r deno lint --fix"
   },
   "fmt": {
     "include": [
