@@ -69,31 +69,31 @@ Existing todo-related tools in ecosystem:
 
 ## Distribution Strategy
 
-### 1. NPM Package (`todo-expander`)
+### 1. NPM Package (`@openminds-it-lab/todo-expander`)
 
 **Target users**: Node.js/npm ecosystem developers
 **Installation**:
 
 ```bash
-npm install --save-dev todo-expander
+npm install --save-dev @openminds-it-lab/todo-expander
 # or globally
-npm install -g todo-expander
+npm install -g @openminds-it-lab/todo-expander
 ```
 
-**Implementation**: Use `dnt` for Deno-to-Node transpilation
+**Implementation**: Use `dnt` for Deno-to-Node transpilation (scoped package, provenance enabled)
 
-### 2. JSR Package (`@saladin/todo-expander`)
+### 2. JSR Package (`@openminds-it-lab/todo-expander`)
 
 **Target users**: Deno ecosystem developers
 **Installation**:
 
 ```bash
-deno add jsr:@saladin/todo-expander
-# or direct run
-deno run -A jsr:@saladin/todo-expander
+deno add jsr:@openminds-it-lab/todo-expander
+# or direct import
+import { processFile } from "jsr:@openminds-it-lab/todo-expander";
 ```
 
-**Implementation**: Native Deno publishing
+**Implementation**: Native Deno publishing under the organization scope
 
 ### 3. Binary Distribution (`todo-expand`)
 
@@ -230,17 +230,15 @@ brew install todo-expand  # (after brew formula submission)
 
 ## Decision Log
 
-**Date**: 2025-09-13
-**Decision**: Adopt `todo-expander` as primary NPM package name
-**Rationale**:
+**Date**: 2025-09-16
+**Decision**: Publish only under organization scopes
+**Details**:
 
-- Clearly communicates purpose
-- Available across all checked registries
-- Consistent with current repository naming
-- Professional and searchable
+- NPM: `@openminds-it-lab/todo-expander` (primary)
+- JSR: `@openminds-it-lab/todo-expander` (primary)
+- Legacy packages deprecated/yanked: unscoped `todo-expander` on NPM and `@saladin/todo-expander` on JSR
 
-**Binary name**: `todo-expand` (shorter, CLI-friendly)
-**JSR scope**: `@saladin` (personal projects scope)
+**Binary name**: `todo-expand` (unchanged)
 
 ---
 
