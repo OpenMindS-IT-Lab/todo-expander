@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Wrapper that delegates to the main todo-expander CLI
+import process from "node:process";
 const { spawn } = require("child_process");
 const path = require("path");
 
