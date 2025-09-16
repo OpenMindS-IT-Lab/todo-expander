@@ -6,6 +6,8 @@ interface TodoMatch {
   raw: string
   start: number
   end: number
+  style: 'line' | 'block'
+  marker: string
 }
 
 /** Parameters for rewriteTodos function */
@@ -60,16 +62,16 @@ export async function processFile({
   const cachePath = `${Deno.cwd()}/.git/.todoexpand-cache.json`
   const cache = cfg.cache ? await readCache(cachePath) : {}
 
-  const start = Date.now()
+  const fileStart = Date.now()
   const updated = await rewriteTodos({
     content,
     todos,
     relPath,
     cfg,
     apiKey,
-    dryRun,
+    _dryRun: dryRun,
     cache,
-    fileStart: start,
+    fileStart,
   })
   if (cfg.cache) await writeCache(cachePath, cache)
   if (updated === null) return { changed: 0, todosFound: todos.length }

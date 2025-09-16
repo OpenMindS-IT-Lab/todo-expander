@@ -219,9 +219,10 @@ export async function runLLM(
 
     // classify error
     const status = (res as { status?: number }).status
-    const err = (res as { error?: Error }).error
+    const err = (res as { error?: Error & { code?: string } }).error
     const isAbort = err &&
-      (err.name === 'AbortError' || err.code === 'AbortError')
+      (err.name === 'AbortError' ||
+        (err as { code?: string }).code === 'AbortError')
     const retriable = isAbort ||
       (status !== undefined &&
         (status === 408 || status === 429 || (status >= 500 && status <= 599)))

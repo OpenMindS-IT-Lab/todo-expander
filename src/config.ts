@@ -268,7 +268,8 @@ function mergeConfigs(...configs: ConfigFile[]): ConfigFile {
   for (const config of configs) {
     for (const [key, value] of Object.entries(config)) {
       if (value !== undefined) {
-        result[key as keyof ConfigFile] = value as ConfigFile[keyof ConfigFile]
+        // Type assertion is safe here since we're merging known ConfigFile objects
+        ;(result as Record<string, unknown>)[key] = value
       }
     }
   }
