@@ -1,5 +1,5 @@
 import { exists } from '@std/fs/exists'
-import { dirname, join } from '@std/path'
+import { join } from '@std/path'
 import { bold, gray, green, yellow } from './log.ts'
 
 /**
