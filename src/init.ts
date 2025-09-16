@@ -97,7 +97,52 @@ async function detectProjectType(
 function getTodoExpanderRoot(): string {
   // This will be the directory containing this script
   const scriptPath = new URL(import.meta.url).pathname
-  return dirname(dirname(scriptPath)) // Go up from src/ to root
+  const srcDir = dirname(scriptPath)
+  const rootDir = dirname(srcDir) // Go up from src/ to root
+
+  // Verify we found the correct directory by checking for templates folder
+  const templatesDir = join(rootDir, 'templates')
+  try {
+    const stat = Deno.statSync(templatesDir)
+    if (stat.isDirectory) {
+      return rootDir
+    }
+  } catch {
+    // Templates directory not found, try alternative paths
+  }
+
+  // Fallback: try to find templates directory relative to current working directory
+  // This handles cases where the script is run from within the project
+  const cwd = Deno.cwd()
+  const cwdTemplates = join(cwd, 'templates')
+  try {
+    const stat = Deno.statSync(cwdTemplates)
+    if (stat.isDirectory) {
+      return cwd
+    }
+  } catch {
+    // Not found in cwd either
+  }
+
+  // Last resort: check parent directories up to 3 levels
+  let searchDir = cwd
+  for (let i = 0; i < 3; i++) {
+    const parentTemplates = join(searchDir, 'templates')
+    try {
+      const stat = Deno.statSync(parentTemplates)
+      if (stat.isDirectory) {
+        return searchDir
+      }
+    } catch {
+      // Continue searching
+    }
+    const parent = dirname(searchDir)
+    if (parent === searchDir) break // Reached filesystem root
+    searchDir = parent
+  }
+
+  // If all else fails, return the original calculated path
+  return rootDir
 }
 
 /**
