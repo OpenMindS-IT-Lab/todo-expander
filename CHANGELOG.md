@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.3](https://github.com/OpenMindS-IT-Lab/todo-expander/compare/1.0.1...1.0.3) (2025-09-16)
+
+### Features
+
+- add lint configuration to deno.json ([5166475](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/516647576089ba197d7c8ed585a144db7df27634))
+
+### Bug Fixes
+
+- resolve npm-scoped binary execution issues ([869adb3](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/869adb3810ec1a1ddb374764c402a46a5471bd98))
+
+### Documentation
+
+- improve CHANGELOG formatting consistency ([258ec5a](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/258ec5a1606f342922d0a308335938e1521cb615))
+- improve formatting and documentation ([2d8b793](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/2d8b7938424866afa17cee9e1e7a43c9acf55b95))
+
+### Styles
+
+- improve code formatting consistency across project ([5e8b0c7](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/5e8b0c7d43d04e21c31910c0332c762b36e064df))
+- format main binary file with semicolons ([5cd1cbc](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/5cd1cbca2654149f30594ff89bf17e99b467e537))
+- format npm-scoped generated source files ([2fcc6de](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/2fcc6deb47043a7a81247ec4ec99aaa973e753b2))
+- apply formatting to core project files ([03214f3](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/03214f3a6b372f8f4f16c66e22fb476b414849e5))
+- format npm package and configuration files ([d4d6e12](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/d4d6e12839408e88788ad6fd681568f6e242e82f))
+- apply code formatting and linting fixes ([7261478](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/726147809fd01ed055fb1da07bfe09331b6dbe94))
+
+### Code Refactoring
+
+- simplify configuration schema and templates ([c2ac8d5](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/c2ac8d5c85e5a1fce3b124918c624d37aa309608))
+
+### Miscellaneous Chores
+
+- remove deprecated npm build script and simplify docs ([9f245b1](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/9f245b16f034a12c287f2887dbfdb02b75651d98))
+- ignore build files ([e731843](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/e731843c1ddf2232a38463949640303e632d9b78))
+- ignore npm-scoped generated dependency files ([d56723b](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/d56723b8671f2daf8cfa4a570ecc211e0c1af099))
+- bump version and improve staging scripts ([753642a](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/753642a68e799b81197288a64af6fe39e006f1f6))
+- update CI/CD configuration ([26b73c1](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/26b73c18af4e786aae489ef0f88b32ec46438756))
+
 ## [1.0.2](https://github.com/OpenMindS-IT-Lab/todo-expander/compare/1.0.1...1.0.2) (2025-09-16)
 
 ### Bug Fixes
