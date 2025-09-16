@@ -1,5 +1,5 @@
 {
-  "name": "@saladin/todo-expander",
+  "name": "@openminds-it-lab/todo-expander",
   "version": "0.1.0",
   "exports": {
     ".": "./src/mod.ts",
