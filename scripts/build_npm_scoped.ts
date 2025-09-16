@@ -7,6 +7,10 @@ const outDir = './npm-scoped'
 
 await emptyDir(outDir)
 
+// Read version from deno.json to keep npm package version in sync
+const denoJson = JSON.parse(await Deno.readTextFile('./deno.json'))
+const pkgVersion: string = denoJson.version ?? '0.0.0'
+
 console.log('🏗️  Building scoped NPM package with dnt...')
 
 await build({
@@ -25,7 +29,7 @@ await build({
   },
   package: {
     name: '@openminds-it-lab/todo-expander',
-    version: '0.1.0',
+    version: pkgVersion,
     description:
       'Transform simple TODO comments into structured, Codex-ready task briefs using AI.',
     license: 'MIT',
