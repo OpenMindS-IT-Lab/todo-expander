@@ -29,8 +29,10 @@
     "publish:all": "echo '🚀 Publishing to organization scopes...' && deno task publish:jsr && deno task publish:npm-org && echo '✅ Published to JSR and NPM organization scopes. Tag and push to trigger GitHub release.'",
     "webhook:set": "bash run/webhooks.sh set",
     "webhook:delete": "bash run/webhooks.sh delete",
-    "precommit": "deno task fmt:staged && deno task lint:staged",
-    "prepush": "deno task fmt && deno task lint",
+    "webhook:list": "curl -s -H 'Authorization: Bearer $GITHUB_TOKEN' -H 'Accept: application/vnd.github+json' https://api.github.com/repos/openminds-it-lab/todo-expander/hooks | jq '.[] | {id, name, active, config}'",
+    "webhook:ping": "test -n \"$HOOK_ID\" && curl -s -H 'Authorization: Bearer $GITHUB_TOKEN' -H 'Accept: application/vnd.github+json' -X POST https://api.github.com/repos/openminds-it-lab/todo-expander/hooks/$HOOK_ID/pings || echo \"HOOK_ID not set\"",
+    "precommit": "deno run -A npm:prettier@^3.3.3 --log-level warn --write $(git diff --cached --name-only --diff-filter=ACMR | grep -E '\\.(ts|js|tsx|jsx|md|json|yaml|yml)$' | tr '\\n' ' ') && deno lint --fix $(git diff --cached --name-only --diff-filter=ACMR | grep -E '\\.(ts|tsx)$' | tr '\\n' ' ')",
+    "prepush": "deno run -A npm:prettier@^3.3.3 --log-level warn --write . && deno fmt && deno lint --fix",
     "fmt:staged": "./scripts/fmt-staged.sh",
     "lint:staged": "./scripts/lint-staged.sh"
   },
