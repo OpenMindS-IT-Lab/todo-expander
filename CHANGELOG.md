@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.2](https://github.com/OpenMindS-IT-Lab/todo-expander/compare/1.0.1...1.0.2) (2025-09-16)
+
+
+### Bug Fixes
+
+* make publishing workflows resilient to already-published versions ([e2b1d90](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/e2b1d900f90f5783a5c54bc2a91e4a32dda4e99d))
+
 ## [1.0.1](https://github.com/OpenMindS-IT-Lab/todo-expander/compare/1.0.0...1.0.1) (2025-09-16)
 
 
