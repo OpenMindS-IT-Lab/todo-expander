@@ -1,11 +1,11 @@
 /** Processing pipeline for per-file TODO expansion and rewrite. */
-import { Cfg } from "./config.ts"
-import { detectTodos } from "./todos.ts"
-import { renderPromptBatch, runLLM } from "./prompt.ts"
-import { applyRewrites } from "./rewrite.ts"
-import { formatFiles } from "./format.ts"
-import { gray } from "./log.ts"
-import { readCache, writeCache } from "./cache.ts"
+import { Cfg } from './config.ts'
+import { detectTodos } from './todos.ts'
+import { renderPromptBatch, runLLM } from './prompt.ts'
+import { applyRewrites } from './rewrite.ts'
+import { formatFiles } from './format.ts'
+import { gray } from './log.ts'
+import { readCache, writeCache } from './cache.ts'
 
 /**
  * Process a single file: detect TODOs, expand via LLM, rewrite in-place,
@@ -111,7 +111,11 @@ async function rewriteTodos({
     const cached = cfg.cache ? (cache[fileKey] ?? cache[tKey]) : null
     if (cached) {
       if (cfg.cache && !cache[fileKey]) cache[fileKey] = cached
-      const replaced = applyRewrites({ content: text, todo, newComment: cached })
+      const replaced = applyRewrites({
+        content: text,
+        todo,
+        newComment: cached,
+      })
       text = replaced
       continue
     }
@@ -126,14 +130,17 @@ async function rewriteTodos({
     const rendered = await renderPromptBatch({
       filePath: relPath,
       language: langFromPath(relPath),
-      todos: pending.map((t, i) => ({ todoComment: t.raw, codeContext: contexts[i] })),
+      todos: pending.map((t, i) => ({
+        todoComment: t.raw,
+        codeContext: contexts[i],
+      })),
       style: cfg.style,
       sections: cfg.sections,
     })
 
     const out = await runLLM({ prompt: rendered, apiKey, cfg })
     if (out) {
-      const parts = out.split("\n---\n")
+      const parts = out.split('\n---\n')
       if (parts.length === pending.length) {
         for (let i = 0; i < pending.length; i++) {
           const todo = pending[i]
@@ -186,11 +193,11 @@ function fnv1aHex(str: string): string {
  * @param raw - Raw TODO text.
  */
 function cacheKey(path: string, raw: string) {
-  return "f:" + fnv1aHex(path + "::" + raw)
+  return 'f:' + fnv1aHex(path + '::' + raw)
 }
 
 function todoKey(raw: string) {
-  return "t:" + fnv1aHex(raw)
+  return 't:' + fnv1aHex(raw)
 }
 
 /**

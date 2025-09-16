@@ -1,4 +1,4 @@
-import { join } from "https://deno.land/std@0.223.0/path/mod.ts"
+import { join } from 'https://deno.land/std@0.223.0/path/mod.ts'
 
 /**
  * Best-effort formatting pass.
@@ -13,16 +13,20 @@ import { join } from "https://deno.land/std@0.223.0/path/mod.ts"
 export async function formatFiles(files: string[]) {
   // Prefer Prettier if available (via npx). Best-effort; ignore failures.
   try {
-    const p = new Deno.Command("npx", { args: ["prettier", "--write", ...files] })
+    const p = new Deno.Command('npx', {
+      args: ['prettier', '--write', ...files],
+    })
     await p.output()
     return
   } catch (_) {}
 
   // Fallback to deno fmt for ts/js
   try {
-    const tsLike = files.filter((f) => /\.(ts|tsx|js|jsx|json|md|yml|yaml)$/.test(f))
+    const tsLike = files.filter((f) =>
+      /\.(ts|tsx|js|jsx|json|md|yml|yaml)$/.test(f)
+    )
     if (tsLike.length) {
-      const p = new Deno.Command("deno", { args: ["fmt", ...tsLike] })
+      const p = new Deno.Command('deno', { args: ['fmt', ...tsLike] })
       await p.output()
     }
   } catch (_) {}

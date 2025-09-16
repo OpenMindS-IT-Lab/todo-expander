@@ -1,7 +1,7 @@
 /** Target discovery utilities. */
-import { join, relative } from "https://deno.land/std@0.223.0/path/mod.ts"
-import { expandGlob } from "https://deno.land/std@0.223.0/fs/expand_glob.ts"
-import { Cfg } from "./config.ts"
+import { join, relative } from 'https://deno.land/std@0.223.0/path/mod.ts'
+import { expandGlob } from 'https://deno.land/std@0.223.0/fs/expand_glob.ts'
+import { Cfg } from './config.ts'
 
 /**
  * Run a git command and return stdout as UTF-8 string.
@@ -11,9 +11,18 @@ import { Cfg } from "./config.ts"
  * @throws Error when git exits with non-zero code.
  */
 async function git(args: string[], { cwd }: { cwd: string }) {
-  const p = new Deno.Command("git", { args, cwd, stdout: "piped", stderr: "piped" })
+  const p = new Deno.Command('git', {
+    args,
+    cwd,
+    stdout: 'piped',
+    stderr: 'piped',
+  })
   const { code, stdout, stderr } = await p.output()
-  if (code !== 0) throw new Error(`git ${args.join(" ")} failed: ${new TextDecoder().decode(stderr)}`)
+  if (code !== 0) {
+    throw new Error(
+      `git ${args.join(' ')} failed: ${new TextDecoder().decode(stderr)}`,
+    )
+  }
   return new TextDecoder().decode(stdout)
 }
 
@@ -23,8 +32,9 @@ async function git(args: string[], { cwd }: { cwd: string }) {
  * @param cfg - Resolved configuration containing include/exclude lists.
  */
 function isIncluded(path: string, cfg: Cfg) {
-  const ext = path.split(".").pop()?.toLowerCase() || ""
-  return cfg.include.includes(ext) && !cfg.exclude.some((skip) => path.includes(`/${skip}/`))
+  const ext = path.split('.').pop()?.toLowerCase() || ''
+  return cfg.include.includes(ext) &&
+    !cfg.exclude.some((skip) => path.includes(`/${skip}/`))
 }
 
 /**
@@ -50,22 +60,22 @@ export async function discoverTargets({
   maxFileKB,
 }: {
   cwd: string
-  mode: "staged" | "paths"
+  mode: 'staged' | 'paths'
   paths: string[]
   include: string[]
   exclude: string[]
   maxFileKB: number
 }): Promise<string[]> {
-  if (mode === "staged") {
-    const out = await git(["diff", "--name-only", "--cached"], { cwd })
-    const files = out.split("\n").map((s) => s.trim()).filter(Boolean)
+  if (mode === 'staged') {
+    const out = await git(['diff', '--name-only', '--cached'], { cwd })
+    const files = out.split('\n').map((s) => s.trim()).filter(Boolean)
     const abs = files.map((f) => join(cwd, f))
     const filtered: string[] = []
     for (const file of abs) {
       try {
         const info = await Deno.stat(file)
         if (!info.isFile) continue
-        const ext = file.split(".").pop()?.toLowerCase() || ""
+        const ext = file.split('.').pop()?.toLowerCase() || ''
         if (!include.includes(ext)) continue
         if (exclude.some((seg) => file.includes(`/${seg}/`))) continue
         if (info.size > maxFileKB * 1024) continue
@@ -84,16 +94,18 @@ export async function discoverTargets({
     try {
       const st = await Deno.stat(abs)
       if (st.isFile) {
-        const ext = abs.split(".").pop()?.toLowerCase() || ""
+        const ext = abs.split('.').pop()?.toLowerCase() || ''
         if (!include.includes(ext)) continue
         if (exclude.some((seg) => abs.includes(`/${seg}/`))) continue
         if (st.size > maxFileKB * 1024) continue
         results.push(abs)
       } else if (st.isDirectory) {
-        for await (const entry of expandGlob("**/*", { root: abs, includeDirs: false })) {
+        for await (
+          const entry of expandGlob('**/*', { root: abs, includeDirs: false })
+        ) {
           const file = entry.path
           const st2 = await Deno.stat(file)
-          const ext = file.split(".").pop()?.toLowerCase() || ""
+          const ext = file.split('.').pop()?.toLowerCase() || ''
           if (!include.includes(ext)) continue
           if (exclude.some((seg) => file.includes(`/${seg}/`))) continue
           if (st2.size > maxFileKB * 1024) continue
