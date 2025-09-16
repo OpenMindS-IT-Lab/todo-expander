@@ -41,7 +41,9 @@ async function loadTemplate(): Promise<string | null> {
 function _fillTemplate(tpl: string, vars: Record<string, string>): string {
   let out = tpl
   for (const [k, v] of Object.entries(vars)) {
-    const re = new RegExp(`\\{\\{${k}\\}\\}`, 'g')
+    // Use a more compatible regex pattern construction
+    const pattern = '\\{\\{' + k + '\\}\\}'
+    const re = new RegExp(pattern, 'g')
     out = out.replace(re, v)
   }
   return out
