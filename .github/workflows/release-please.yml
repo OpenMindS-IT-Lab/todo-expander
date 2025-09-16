@@ -43,7 +43,16 @@ jobs:
         with:
           deno-version: ${{ env.DENO_VERSION }}
       - name: Publish to JSR
-        run: deno publish --token $JSR_TOKEN
+        run: |
+          deno publish --token $JSR_TOKEN || {
+            if curl -s "https://jsr.io/api/scopes/openminds-it-lab/packages/todo-expander" | grep -q "\"latestVersion\":\"$(grep '"version"' deno.json | cut -d'"' -f4)\""; then
+              echo "✅ Version $(grep '"version"' deno.json | cut -d'"' -f4) already published to JSR"
+              exit 0
+            else
+              echo "❌ JSR publish failed for unknown reason"
+              exit 1
+            fi
+          }
         env:
           JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
 
@@ -69,7 +78,17 @@ jobs:
       - name: Build NPM package (scoped)
         run: deno run -A scripts/build_npm_scoped.ts
       - name: Publish to NPM (Organization Scope)
-        run: cd npm-scoped && npm publish --access public --provenance
+        run: |
+          cd npm-scoped
+          npm publish --access public --provenance || {
+            if npm info @openminds-it-lab/todo-expander@$(node -p "require('./package.json').version") > /dev/null 2>&1; then
+              echo "✅ Version $(node -p "require('./package.json').version") already published to npm"
+              exit 0
+            else
+              echo "❌ Publish failed for unknown reason"
+              exit 1
+            fi
+          }
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
