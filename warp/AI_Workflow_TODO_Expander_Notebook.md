@@ -3,6 +3,7 @@
 This Notebook contains ready-to-run snippets for your global TODO-expansion flow. Import it into your Personal Warp Drive → AI Workflow folder.
 
 ## 🔑 Preflight
+
 ```warp-runnable-command
 # Ensure your OpenAI API key is available
 export OPENAI_API_KEY={{OPENAI_API_KEY}}
@@ -14,6 +15,7 @@ curl -sS https://api.openai.com/v1/models \
 ```
 
 ## 🚀 Expand TODOs in staged files
+
 ```warp-runnable-command
 # Rewrites plain TODOs in staged files into Codex-ready briefs, then re-stages and formats
 # Requires: `todo-expand` on PATH
@@ -21,18 +23,21 @@ todo-expand --staged
 ```
 
 ## 👀 Dry-run preview (no changes)
+
 ```warp-runnable-command
 # Preview rewrites without writing files
 TODO_EXPAND_DRY=1 todo-expand --staged
 ```
 
 ## 🎯 Expand TODOs in a specific file
+
 ```warp-runnable-command
 # Usage: replace ./src/file.ts with the target path
 ARG=./src/file.ts todo-expand "$ARG"
 ```
 
 ## ✅ CI-style TODO check (staged)
+
 ```warp-runnable-command
 # Fails when raw TODOs are found in staged files
 files=$(git diff --name-only --cached | grep -E '\\.(ts|tsx|js|jsx|py|go|rs|md)$' || true)
@@ -43,6 +48,7 @@ echo "No raw TODOs found"
 ```
 
 ## 🛠️ Install global hook (optional)
+
 ```warp-runnable-command
 # Set a global hooks path once
 git config --global core.hooksPath ~/.git-hooks
@@ -70,6 +76,7 @@ chmod +x ~/.git-hooks/pre-commit
 ```
 
 ## 💡 Tips
+
 - Add a VS Code snippet for an “AI TASK” skeleton to seed structured TODOs manually when desired.
 - Use Warp Workflow “Expand TODOs (staged)” for one-click runs.
 - Maintain a `.todoexpandrc.json` in repos for per-repo fine-tuning (include/exclude globs, section names).

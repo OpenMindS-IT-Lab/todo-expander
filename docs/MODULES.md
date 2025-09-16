@@ -44,4 +44,3 @@ src/format.ts
 src/log.ts
 
 - Color helpers for consistent terminal output.
-

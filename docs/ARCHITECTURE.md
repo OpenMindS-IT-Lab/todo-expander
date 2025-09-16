@@ -12,9 +12,9 @@ The tool follows a small, modular pipeline.
 
 Sequence overview
 
-1) CLI parses flags/env and loads config (`src/config.ts`, `bin/todo-expand.ts`)
-2) Target discovery resolves which files match ext/filters (`src/targets.ts`)
-3) For each file:
+1. CLI parses flags/env and loads config (`src/config.ts`, `bin/todo-expand.ts`)
+2. Target discovery resolves which files match ext/filters (`src/targets.ts`)
+3. For each file:
    - Detect TODOs (`src/todos.ts`)
    - For each TODO from bottom-to-top:
      - Extract code context (`src/process.ts`)
@@ -28,4 +28,3 @@ Operational notes
 - Staged mode uses `git diff --name-only --cached` to scope work.
 - File size guard (`maxFileKB`) prevents processing very large files.
 - Comment style normalization ensures the output matches the input fencing.
-

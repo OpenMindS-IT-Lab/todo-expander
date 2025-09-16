@@ -264,7 +264,7 @@ The tool automatically detects and processes these TODO formats:
 // TODO: Single-line JavaScript/TypeScript comment
 # TODO: Python/shell comment
 /* TODO: Block comment */
-/* TODO: 
+/* TODO:
    Multi-line block comment
 */
 ```
