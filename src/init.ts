@@ -17,23 +17,94 @@ export type InitOptions = {
 }
 
 /**
+ * Embedded template contents
+ */
+const TEMPLATE_CONTENTS = {
+  'base-config': `{
+  "$schema": "https://raw.githubusercontent.com/OpenMindS-IT-Lab/todo-expander/main/schema/todoexpand.schema.json",
+  "style": "succinct",
+  "include": ["ts", "tsx", "js", "jsx"],
+  "exclude": ["node_modules", "build", "dist", ".git"],
+  "sections": ["Context", "Goal", "Steps", "Constraints", "Acceptance"],
+  "contextLines": 12,
+  "timeout": 45000,
+  "concurrency": 1,
+  "cache": true,
+  "format": true
+}`,
+  'monorepo-config': `{
+  "$schema": "https://raw.githubusercontent.com/OpenMindS-IT-Lab/todo-expander/main/schema/todoexpand.schema.json",
+  "style": "verbose",
+  "include": ["ts", "tsx", "js", "jsx", "py", "go", "rs", "java"],
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    ".git",
+    "target",
+    "__pycache__",
+    "venv",
+    ".venv"
+  ],
+  "sections": [
+    "Context",
+    "Goal",
+    "Steps",
+    "Dependencies",
+    "Testing",
+    "Acceptance"
+  ],
+  "contextLines": 15,
+  "timeout": 60000,
+  "concurrency": 3,
+  "cache": true,
+  "format": true,
+  "verboseLogs": true
+}`,
+  'non-git-config': `{
+  "$schema": "https://raw.githubusercontent.com/OpenMindS-IT-Lab/todo-expander/main/schema/todoexpand.schema.json",
+  "style": "succinct",
+  "include": ["ts", "tsx", "js", "jsx", "md"],
+  "exclude": ["node_modules", "build", "dist"],
+  "sections": ["Context", "Goal", "Steps", "Acceptance"],
+  "contextLines": 10,
+  "timeout": 30000,
+  "concurrency": 1,
+  "cache": false,
+  "format": true
+}`,
+  'env-example': `# Example .env for todo-expander
+# Copy to your project root as .env and fill in values
+
+# REQUIRED
+OPENAI_API_KEY=
+
+# OPTIONAL
+OPENAI_MODEL=gpt-4o-mini
+TODO_EXPAND_STYLE=succinct
+TODO_EXPAND_SECTIONS=Context,Goal,Steps,Constraints,Acceptance
+TODO_EXPAND_DRY=
+`,
+}
+
+/**
  * Template data for different project types
  */
 const TEMPLATES = {
   base: {
     description: 'Standard single-repository project',
-    configFile: 'templates/base/.todoexpandrc.json',
-    envFile: 'templates/base/.env.example',
+    configContent: TEMPLATE_CONTENTS['base-config'],
+    envContent: TEMPLATE_CONTENTS['env-example'],
   },
   monorepo: {
     description: 'Multi-language monorepo with higher concurrency',
-    configFile: 'templates/monorepo/.todoexpandrc.json',
-    envFile: 'templates/base/.env.example',
+    configContent: TEMPLATE_CONTENTS['monorepo-config'],
+    envContent: TEMPLATE_CONTENTS['env-example'],
   },
   'non-git': {
     description: 'Non-git project (cache disabled)',
-    configFile: 'templates/non-git/.todoexpandrc.json',
-    envFile: 'templates/base/.env.example',
+    configContent: TEMPLATE_CONTENTS['non-git-config'],
+    envContent: TEMPLATE_CONTENTS['env-example'],
   },
 }
 
@@ -92,75 +163,13 @@ async function detectProjectType(
 }
 
 /**
- * Get the path to the todo-expander installation directory
+ * Write template content to a file
  */
-function getTodoExpanderRoot(): string {
-  // This will be the directory containing this script
-  const scriptPath = new URL(import.meta.url).pathname
-  const srcDir = dirname(scriptPath)
-  const rootDir = dirname(srcDir) // Go up from src/ to root
-
-  // Verify we found the correct directory by checking for templates folder
-  const templatesDir = join(rootDir, 'templates')
-  try {
-    const stat = Deno.statSync(templatesDir)
-    if (stat.isDirectory) {
-      return rootDir
-    }
-  } catch {
-    // Templates directory not found, try alternative paths
-  }
-
-  // Fallback: try to find templates directory relative to current working directory
-  // This handles cases where the script is run from within the project
-  const cwd = Deno.cwd()
-  const cwdTemplates = join(cwd, 'templates')
-  try {
-    const stat = Deno.statSync(cwdTemplates)
-    if (stat.isDirectory) {
-      return cwd
-    }
-  } catch {
-    // Not found in cwd either
-  }
-
-  // Last resort: check parent directories up to 3 levels
-  let searchDir = cwd
-  for (let i = 0; i < 3; i++) {
-    const parentTemplates = join(searchDir, 'templates')
-    try {
-      const stat = Deno.statSync(parentTemplates)
-      if (stat.isDirectory) {
-        return searchDir
-      }
-    } catch {
-      // Continue searching
-    }
-    const parent = dirname(searchDir)
-    if (parent === searchDir) break // Reached filesystem root
-    searchDir = parent
-  }
-
-  // If all else fails, return the original calculated path
-  return rootDir
-}
-
-/**
- * Copy a template file to the target location
- */
-async function copyTemplate(
-  templatePath: string,
+async function writeTemplateFile(
+  content: string,
   targetPath: string,
   force: boolean,
 ): Promise<boolean> {
-  const todoExpanderRoot = getTodoExpanderRoot()
-  const fullTemplatePath = join(todoExpanderRoot, templatePath)
-
-  // Check if template exists
-  if (!(await exists(fullTemplatePath))) {
-    throw new Error(`Template file not found: ${templatePath}`)
-  }
-
   // Check if target already exists
   if (!force && (await exists(targetPath))) {
     console.log(
@@ -171,10 +180,8 @@ async function copyTemplate(
     return false
   }
 
-  // Copy the template
-  const content = await Deno.readTextFile(fullTemplatePath)
+  // Write the template content
   await Deno.writeTextFile(targetPath, content)
-
   return true
 }
 
@@ -281,14 +288,14 @@ export async function initProject(options: InitOptions): Promise<void> {
   try {
     // 1. Create .todoexpandrc.json
     const configTarget = join(cwd, '.todoexpandrc.json')
-    if (await copyTemplate(template.configFile, configTarget, force)) {
+    if (await writeTemplateFile(template.configContent, configTarget, force)) {
       createdFiles.push('.todoexpandrc.json')
       console.log(green('✓ Created .todoexpandrc.json'))
     }
 
     // 2. Create .env.example
     const envTarget = join(cwd, '.env.example')
-    if (await copyTemplate(template.envFile, envTarget, force)) {
+    if (await writeTemplateFile(template.envContent, envTarget, force)) {
       createdFiles.push('.env.example')
       console.log(green('✓ Created .env.example'))
     }
