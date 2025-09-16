@@ -13,6 +13,10 @@ permissions:
 env:
   DENO_VERSION: v2.x
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release-please:
     runs-on: ubuntu-latest
@@ -57,12 +61,12 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-      - name: Build NPM package
-        run: deno task build:npm
+      - name: Build NPM package (scoped)
+        run: deno run -A scripts/build_npm_scoped.ts
       - name: Publish to NPM (Organization Scope)
-        run: cd npm-scoped && npm publish --access public
+        run: cd npm-scoped && npm publish --access public --provenance
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # Note: Binary releases are still handled by the existing release-binaries.yml workflow
   # which triggers on tag creation. This provides a backup mechanism and keeps the

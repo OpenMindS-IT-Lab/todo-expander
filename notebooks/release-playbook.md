@@ -80,13 +80,12 @@ deno publish
 #### NPM Publishing
 
 ```bash
-# Build NPM package
-deno task build:npm
-deno task pack:npm
+# Build NPM package (scoped)
+deno run -A scripts/build_npm_scoped.ts
 
-# Publish to NPM (ensure you're logged in)
-cd npm
-npm publish --access public
+# Publish to NPM (scoped; ensure you're logged in)
+cd npm-scoped
+npm publish --access public --provenance
 cd ..
 ```
 
@@ -167,12 +166,12 @@ Current workflow environment:
 - **NPM**: `@openminds-it-lab/todo-expander`
 - **GitHub**: Binary releases at `v{version}` tags
 
-### Legacy Packages (Deprecated)
+### Legacy Packages (Removed/Deprecated)
 
-- **JSR Personal**: `@saladin/todo-expander` (deprecated)
-- **NPM Unscoped**: `todo-expander` (deprecated)
+- JSR Personal: `@saladin/todo-expander` — removed/deprecated in favor of `@openminds-it-lab/todo-expander`
+- NPM Unscoped: `todo-expander` — removed/deprecated in favor of `@openminds-it-lab/todo-expander`
 
-**Note**: All new installations should use the organization scoped packages above.
+Note: All new installations should use the organization-scoped packages above.
 
 ## Troubleshooting
 
@@ -227,7 +226,7 @@ deno eval 'import * as t from "jsr:@openminds-it-lab/todo-expander"; console.log
 # Full manual release process (use only if automated release fails)
 deno task fmt && deno task lint
 deno publish --dry-run && deno publish
-deno task build:npm && cd npm && npm publish --access public && cd ..
+deno run -A scripts/build_npm_scoped.ts && cd npm-scoped && npm publish --access public --provenance && cd ..
 git tag -s "v$(jq -r .version deno.json)" -m "Release v$(jq -r .version deno.json)"
 git push origin "v$(jq -r .version deno.json)"
 ```
