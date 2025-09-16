@@ -1,6 +1,6 @@
 {
   "name": "@openminds-it-lab/todo-expander",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Transform simple TODO comments into structured, Codex-ready task briefs using AI.",
   "keywords": [
     "todo",
