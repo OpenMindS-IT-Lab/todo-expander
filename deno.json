@@ -40,7 +40,8 @@
       "scripts/"
     ],
     "exclude": [
-      "dist/"
+      "dist/",
+      "npm-scoped/"
     ],
     "indentWidth": 2,
     "lineWidth": 80,
