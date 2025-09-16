@@ -19,7 +19,9 @@ export async function readCache(path: string): Promise<Record<string, string>> {
  */
 export async function writeCache(path: string, data: Record<string, string>) {
   try {
-    await Deno.mkdir(new URL("./", `file://${path}`).pathname, { recursive: true })
+    await Deno.mkdir(new URL('./', `file://${path}`).pathname, {
+      recursive: true,
+    })
   } catch {}
   await Deno.writeTextFile(path, JSON.stringify(data, null, 2))
 }
