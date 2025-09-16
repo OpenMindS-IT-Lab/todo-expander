@@ -1,0 +1,64 @@
+name: Release Binaries
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.x
+      - name: Build linux x64
+        run: deno compile -A --target x86_64-unknown-linux-gnu -o dist/todo-expand-${{ github.ref_name }}-linux-x64 bin/todo-expand.ts
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/todo-expand-${{ github.ref_name }}-linux-x64
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.x
+      - name: Build macOS x64
+        run: deno compile -A --target x86_64-apple-darwin -o dist/todo-expand-${{ github.ref_name }}-macos-x64 bin/todo-expand.ts
+      - name: Build macOS arm64
+        run: deno compile -A --target aarch64-apple-darwin -o dist/todo-expand-${{ github.ref_name }}-macos-arm64 bin/todo-expand.ts
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/todo-expand-${{ github.ref_name }}-macos-x64
+            dist/todo-expand-${{ github.ref_name }}-macos-arm64
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.x
+      - name: Build windows x64
+        shell: bash
+        run: deno compile -A --target x86_64-pc-windows-msvc -o dist/todo-expand-${{ github.ref_name }}-windows-x64.exe bin/todo-expand.ts
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/todo-expand-${{ github.ref_name }}-windows-x64.exe
