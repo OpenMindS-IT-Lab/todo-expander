@@ -43,7 +43,7 @@ jobs:
         with:
           deno-version: ${{ env.DENO_VERSION }}
       - name: Publish to JSR
-        run: deno publish
+        run: deno publish --token $JSR_TOKEN
         env:
           JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
 
