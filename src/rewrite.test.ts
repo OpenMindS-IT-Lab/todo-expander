@@ -1,7 +1,4 @@
-import {
-  assertEquals,
-  assertStringIncludes,
-} from 'https://deno.land/std@0.223.0/assert/mod.ts'
+import { assertEquals, assertStringIncludes } from '@std/assert'
 import { applyRewrites } from './rewrite.ts'
 
 Deno.test('applyRewrites: normalizes to line comments with original marker', () => {

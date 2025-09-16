@@ -15,10 +15,10 @@
  *   --allow-read --allow-write --allow-env --allow-run=git --allow-net=api.openai.com
  */
 
-import { parseArgs } from 'https://deno.land/std@0.223.0/cli/parse_args.ts'
-import { join, relative } from 'https://deno.land/std@0.223.0/path/mod.ts'
-import { exists } from 'https://deno.land/std@0.223.0/fs/exists.ts'
-import { load as loadEnv } from 'https://deno.land/std@0.223.0/dotenv/mod.ts'
+import { parseArgs } from '@std/cli/parse-args'
+import { relative } from '@std/path'
+import { exists } from '@std/fs'
+import { load as loadEnv } from '@std/dotenv'
 
 import { loadConfig, printConfig } from '../src/config.ts'
 import { discoverTargets } from '../src/targets.ts'
@@ -29,10 +29,14 @@ import { bold, gray, green, yellow } from '../src/log.ts'
 // Load environment from .env and .env.local if present (explicit order)
 try {
   await loadEnv({ envPath: '.env', export: true })
-} catch (_) {}
+} catch (_) {
+  // Ignore errors loading .env file
+}
 try {
   await loadEnv({ envPath: '.env.local', export: true })
-} catch (_) {}
+} catch (_) {
+  // Ignore errors loading .env.local file
+}
 
 /**
  * Fallback .env loader in case std/dotenv could not export variables.

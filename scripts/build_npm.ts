@@ -1,7 +1,7 @@
 #!/usr/bin/env deno run -A
 
-import { build, emptyDir } from 'https://deno.land/x/dnt@0.40.0/mod.ts'
-import { join } from 'https://deno.land/std@0.208.0/path/mod.ts'
+import { build, emptyDir } from '@deno/dnt'
+import { join } from '@std/path'
 
 const outDir = './npm'
 

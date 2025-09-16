@@ -30,8 +30,8 @@
     "webhook:delete": "bash run/webhooks.sh delete",
     "precommit": "deno task fmt:staged && deno task lint:staged",
     "prepush": "deno task fmt && deno task lint",
-    "fmt:staged": "git diff --name-only --cached --diff-filter=ACM | xargs -r deno fmt",
-    "lint:staged": "git diff --name-only --cached --diff-filter=ACM | xargs -r deno lint --fix"
+    "fmt:staged": "./scripts/fmt-staged.sh",
+    "lint:staged": "./scripts/lint-staged.sh"
   },
   "fmt": {
     "include": [
@@ -47,5 +47,14 @@
     "semiColons": false,
     "singleQuote": true,
     "useTabs": false
+  },
+  "imports": {
+    "@std/path": "jsr:@std/path@^1.0.0",
+    "@std/fs": "jsr:@std/fs@^1.0.0",
+    "@std/assert": "jsr:@std/assert@^1.0.0",
+    "@std/cli": "jsr:@std/cli@^1.0.0",
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.0",
+    "@std/fmt": "jsr:@std/fmt@^1.0.0",
+    "@deno/dnt": "jsr:@deno/dnt@^0.41.0"
   }
 }

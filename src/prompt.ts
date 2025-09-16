@@ -1,5 +1,5 @@
-import { Cfg } from './config.ts'
-import { join } from 'https://deno.land/std@0.223.0/path/mod.ts'
+import type { Cfg } from './config.ts'
+import { join } from '@std/path'
 
 function minifyTemplate(t: string): string {
   const lines = t
@@ -35,7 +35,7 @@ async function loadTemplate(): Promise<string | null> {
  * @param vars - Mapping of placeholder names to values.
  * @returns Interpolated template string.
  */
-function fillTemplate(tpl: string, vars: Record<string, string>): string {
+function _fillTemplate(tpl: string, vars: Record<string, string>): string {
   let out = tpl
   for (const [k, v] of Object.entries(vars)) {
     const re = new RegExp(`\\{\\{${k}\\}\\}`, 'g')
@@ -169,7 +169,7 @@ export async function renderPromptBatch({
  */
 export async function runLLM(
   { prompt, apiKey, cfg }: { prompt: string; apiKey: string; cfg: Cfg },
-) {
+): Promise<string | null> {
   const body: Record<string, unknown> = {
     model: cfg.model,
     input: [
@@ -218,8 +218,8 @@ export async function runLLM(
     }
 
     // classify error
-    const status = (res as any).status as number | undefined
-    const err = (res as any).error
+    const status = (res as { status?: number }).status
+    const err = (res as { error?: Error }).error
     const isAbort = err &&
       (err.name === 'AbortError' || err.code === 'AbortError')
     const retriable = isAbort ||

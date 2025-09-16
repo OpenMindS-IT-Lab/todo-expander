@@ -297,5 +297,16 @@
     "https://esm.sh/json-schema-traverse@1.0.0?target=denonext": "3e60200c0d28b5e081db526a78c7911c094fd64c92484ebe050becb8f69788bb",
     "https://esm.sh/uri-js@4.4.1/denonext/uri-js.mjs": "bd68de3817f6918945452daf63e75f42cda9b299115b525e8c905b53c2e64854",
     "https://esm.sh/uri-js@4.4.1?target=denonext": "712c0abb88b934bb78fe2919ee64eb73cd17a09867993f879cfe422c15b4172a"
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@deno/dnt@0.41",
+      "jsr:@std/assert@1",
+      "jsr:@std/cli@1",
+      "jsr:@std/dotenv@0.225",
+      "jsr:@std/fmt@1",
+      "jsr:@std/fs@1",
+      "jsr:@std/path@1"
+    ]
   }
 }

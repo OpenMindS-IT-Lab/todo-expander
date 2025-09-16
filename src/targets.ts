@@ -1,7 +1,7 @@
 /** Target discovery utilities. */
-import { join, relative } from 'https://deno.land/std@0.223.0/path/mod.ts'
-import { expandGlob } from 'https://deno.land/std@0.223.0/fs/expand_glob.ts'
-import { Cfg } from './config.ts'
+import { join } from '@std/path'
+import { expandGlob } from '@std/fs'
+import type { Cfg } from './config.ts'
 
 /**
  * Run a git command and return stdout as UTF-8 string.
@@ -31,7 +31,7 @@ async function git(args: string[], { cwd }: { cwd: string }) {
  * @param path - Absolute path to test.
  * @param cfg - Resolved configuration containing include/exclude lists.
  */
-function isIncluded(path: string, cfg: Cfg) {
+function _isIncluded(path: string, cfg: Cfg) {
   const ext = path.split('.').pop()?.toLowerCase() || ''
   return cfg.include.includes(ext) &&
     !cfg.exclude.some((skip) => path.includes(`/${skip}/`))

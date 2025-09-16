@@ -1,9 +1,5 @@
-import {
-  assert,
-  assertEquals,
-  assertMatch,
-} from 'https://deno.land/std@0.223.0/assert/mod.ts'
-import { type Cfg, loadConfig, printConfig } from './config.ts'
+import { assert, assertEquals, assertMatch } from '@std/assert'
+import { loadConfig, printConfig } from './config.ts'
 
 async function write(path: string, text: string) {
   await Deno.mkdir(new URL('./', `file://${path}`).pathname, {
