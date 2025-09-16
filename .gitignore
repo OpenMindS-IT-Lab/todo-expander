@@ -6,6 +6,7 @@ npm/
 
 # Build outputs
 dist/
+**node_modules/**
 
 # OS / Editor files
 .DS_Store

@@ -168,10 +168,7 @@ Current workflow environment:
 
 ### Legacy Packages (Removed/Deprecated)
 
-- JSR Personal: `@saladin/todo-expander` — removed/deprecated in favor of `@openminds-it-lab/todo-expander`
-- NPM Unscoped: `todo-expander` — removed/deprecated in favor of `@openminds-it-lab/todo-expander`
-
-Note: All new installations should use the organization-scoped packages above.
+Legacy packages have been removed/deprecated. Use the organization-scoped packages listed above.
 
 ## Troubleshooting
 

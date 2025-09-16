@@ -32,7 +32,7 @@ jobs:
         run: deno fmt --check
       - name: Lint
         id: lint
-        run: deno lint
+        run: deno lint --ignore=npm-scoped/
       - name: Schema validate
         id: schema_validate
         run: deno run -A scripts/validate-schema.ts

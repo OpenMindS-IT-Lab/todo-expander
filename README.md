@@ -2,6 +2,16 @@
 
 Transform simple TODO comments into structured, Codex-ready task briefs using AI.
 
+> Migration notice
+>
+> - This project now publishes only under organization scopes:
+>   - NPM: @openminds-it-lab/todo-expander
+>   - JSR: jsr:@openminds-it-lab/todo-expander
+> - Legacy packages (@saladin/todo-expander on JSR and unscoped todo-expander on NPM) have been deprecated/yanked.
+> - If you previously installed the legacy NPM package globally, uninstall it before installing the scoped one:
+>   - npm uninstall -g todo-expander
+>   - npm install -g @openminds-it-lab/todo-expander
+
 ## Docs
 
 - docs/ARCHITECTURE.md: Pipeline and design overview

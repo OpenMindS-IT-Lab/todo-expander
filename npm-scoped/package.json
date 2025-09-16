@@ -1,15 +1,7 @@
 {
   "name": "@openminds-it-lab/todo-expander",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Transform simple TODO comments into structured, Codex-ready task briefs using AI.",
-  "type": "module",
-  "bin": {
-    "todo-expand": "./bin/todo-expand.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/OpenMindS-IT-Lab/todo-expander.git"
-  },
   "keywords": [
     "todo",
     "ai",
@@ -24,17 +16,50 @@
     "openminds",
     "it-lab"
   ],
-  "author": "OpenMinds IT Lab",
+  "author": {
+    "name": "OpenMindS IT Lab",
+    "url": "https://github.com/OpenMindS-IT-Lab"
+  },
+  "homepage": "https://github.com/OpenMindS-IT-Lab/todo-expander#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenMindS-IT-Lab/todo-expander.git"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/OpenMindS-IT-Lab/todo-expander/issues"
   },
-  "homepage": "https://github.com/OpenMindS-IT-Lab/todo-expander#readme",
+  "scripts": {
+    "postinstall": "node -e \"console.log('\\n🎉 @openminds-it-lab/todo-expander installed! Run: todo-expand init\\n')\""
+  },
+  "bin": {
+    "todo-expand": "./bin/todo-expand.js"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "bin/",
+    "esm/",
+    "prompts/",
+    "schema/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ],
+  "preferGlobal": true,
   "publishConfig": {
     "access": "public",
     "provenance": true
   },
-  "engines": {
-    "node": ">=18"
-  }
+  "dependencies": {
+    "@deno/shim-deno": "~0.18.0",
+    "@deno/shim-crypto": "~0.3.1",
+    "undici": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.0"
+  },
+  "_generatedBy": "dnt@dev"
 }

@@ -8,8 +8,8 @@ JSR (JavaScript Registry) is still in development and organization/team features
 
 ### Scope Availability
 
-- **@openminds-it-lab**: Available (returns "scope not found")
-- **Current Package**: Published under personal scope `@saladin/todo-expander`
+- @openminds-it-lab: Target organization scope
+- Personal scope deprecated/yanked: `@saladin/todo-expander`
 
 ### JSR Organization Features
 
@@ -49,7 +49,6 @@ Check these resources periodically:
 
 ## Current Package Links
 
-- **JSR**: [`@saladin/todo-expander`](https://jsr.io/@saladin/todo-expander)
-- **NPM Main**: [`todo-expander`](https://www.npmjs.com/package/todo-expander)
-- **NPM Scoped**: `@openminds-it-lab/todo-expander` (in progress)
-- **GitHub**: [OpenMindS-IT-Lab/todo-expander](https://github.com/OpenMindS-IT-Lab/todo-expander)
+- JSR: [`@openminds-it-lab/todo-expander`](https://jsr.io/@openminds-it-lab/todo-expander)
+- NPM: [`@openminds-it-lab/todo-expander`](https://www.npmjs.com/package/@openminds-it-lab/todo-expander)
+- GitHub: [OpenMindS-IT-Lab/todo-expander](https://github.com/OpenMindS-IT-Lab/todo-expander)
