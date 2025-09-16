@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.1](https://github.com/OpenMindS-IT-Lab/todo-expander/compare/1.0.0...1.0.1) (2025-09-16)
+
+
+### Bug Fixes
+
+* sync version to 1.0.0 and improve JSR publishing ([3dc5cbb](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/3dc5cbb40e75c173c7045acabb148e698ff4c258))
+
+
+### Miscellaneous Chores
+
+* update npm-scoped package to version 1.0.0 ([7d796e0](https://github.com/OpenMindS-IT-Lab/todo-expander/commit/7d796e00ec43453acfbb5f38d64c3ce371e0d1ec))
+
 ## [1.0.0](https://github.com/OpenMindS-IT-Lab/todo-expander/compare/0.1.1...1.0.0) (2025-09-16)
 
 
