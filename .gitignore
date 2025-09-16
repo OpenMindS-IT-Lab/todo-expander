@@ -9,8 +9,6 @@ dist/
 
 # OS / Editor files
 .DS_Store
-.vscode/
-.idea/
 
 # Logs and coverage
 *.log
