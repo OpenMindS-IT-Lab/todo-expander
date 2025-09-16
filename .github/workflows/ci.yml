@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  DENO_VERSION: v2.x
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+      - name: Format check
+        id: format_check
+        run: deno fmt --check
+      - name: Lint
+        id: lint
+        run: deno lint
+      - name: Schema validate
+        id: schema_validate
+        run: deno run -A scripts/validate-schema.ts
+      - name: Build compile sanity
+        id: build_compile_sanity
+        run: deno compile -A -o /tmp/todo-expand bin/todo-expand.ts
+      - name: PR status comment
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: ci-status
+          message: |
+            CI result: ${{ job.status }}
+            - fmt: ${{ steps.format_check.outcome || 'checked' }}
+            - lint: ${{ steps.lint.outcome || 'checked' }}
+            - schema: ${{ steps.schema_validate.outcome || 'checked' }}
+            - compile: ${{ steps.build_compile_sanity.outcome || 'built' }}

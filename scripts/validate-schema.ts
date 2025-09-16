@@ -8,8 +8,8 @@
  * 3. Example configs in documentation validate against the schema
  */
 
-import { join } from 'https://deno.land/std@0.223.0/path/mod.ts'
-import { walk } from 'https://deno.land/std@0.223.0/fs/walk.ts'
+import { join } from '@std/path'
+import { walk } from '@std/fs'
 
 // JSON Schema validator - using a simple fetch-based approach for Deno
 const AJV_URL = 'https://esm.sh/ajv@8.12.0'
@@ -17,13 +17,21 @@ const AJV_FORMATS_URL = 'https://esm.sh/ajv-formats@2.1.1'
 
 interface ValidationResult {
   valid: boolean
-  errors?: any[]
+  errors?: ValidationError[]
 }
+
+interface ValidationError {
+  message: string
+  instancePath?: string
+  [key: string]: unknown
+}
+
+type JSONSchema = Record<string, unknown>
 
 /**
  * Load and validate the schema file itself
  */
-async function loadSchema(): Promise<any> {
+async function loadSchema(): Promise<JSONSchema> {
   const schemaPath = join(Deno.cwd(), 'schema', 'todoexpand.schema.json')
   const schemaContent = await Deno.readTextFile(schemaPath)
 
@@ -41,8 +49,8 @@ async function loadSchema(): Promise<any> {
  * Validate a configuration object against the schema
  */
 async function validateConfig(
-  schema: any,
-  config: any,
+  schema: JSONSchema,
+  config: unknown,
   source: string,
 ): Promise<ValidationResult> {
   try {
@@ -69,7 +77,7 @@ async function validateConfig(
 /**
  * Find and validate all template configuration files
  */
-async function validateTemplates(schema: any): Promise<boolean> {
+async function validateTemplates(schema: JSONSchema): Promise<boolean> {
   let allValid = true
   const templatesDir = join(Deno.cwd(), 'templates')
 
@@ -112,7 +120,7 @@ async function validateTemplates(schema: any): Promise<boolean> {
 /**
  * Validate the current project's .todoexpandrc.json if it exists
  */
-async function validateProjectConfig(schema: any): Promise<boolean> {
+async function validateProjectConfig(schema: JSONSchema): Promise<boolean> {
   const configPath = join(Deno.cwd(), '.todoexpandrc.json')
 
   try {
@@ -147,7 +155,7 @@ async function validateProjectConfig(schema: any): Promise<boolean> {
 /**
  * Validate example configurations embedded in the schema
  */
-async function validateSchemaExamples(schema: any): Promise<boolean> {
+async function validateSchemaExamples(schema: JSONSchema): Promise<boolean> {
   console.log('\n📚 Validating schema examples...')
 
   if (!schema.examples || !Array.isArray(schema.examples)) {

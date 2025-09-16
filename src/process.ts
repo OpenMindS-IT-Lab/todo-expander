@@ -1,5 +1,29 @@
 /** Processing pipeline for per-file TODO expansion and rewrite. */
-import { Cfg } from './config.ts'
+import type { Cfg } from './config.ts'
+
+/** TODO match structure with start/end line indices */
+interface TodoMatch {
+  raw: string
+  start: number
+  end: number
+  style: 'line' | 'block'
+  marker: string
+}
+
+/** Parameters for rewriteTodos function */
+interface RewriteTodosParams {
+  content: string
+  todos: TodoMatch[]
+  relPath: string
+  cfg: Cfg
+  apiKey: string
+  _dryRun: boolean
+  cache: Record<string, string>
+  fileStart: number
+}
+
+/** Cache structure for TODO expansions */
+type TodoCache = Record<string, string>
 import { detectTodos } from './todos.ts'
 import { renderPromptBatch, runLLM } from './prompt.ts'
 import { applyRewrites } from './rewrite.ts'
@@ -38,16 +62,16 @@ export async function processFile({
   const cachePath = `${Deno.cwd()}/.git/.todoexpand-cache.json`
   const cache = cfg.cache ? await readCache(cachePath) : {}
 
-  const start = Date.now()
+  const fileStart = Date.now()
   const updated = await rewriteTodos({
     content,
     todos,
     relPath,
     cfg,
     apiKey,
-    dryRun,
+    _dryRun: dryRun,
     cache,
-    fileStart: start,
+    fileStart,
   })
   if (cfg.cache) await writeCache(cachePath, cache)
   if (updated === null) return { changed: 0, todosFound: todos.length }
@@ -83,14 +107,14 @@ async function rewriteTodos({
   relPath,
   cfg,
   apiKey,
-  dryRun,
+  _dryRun,
   cache,
   fileStart,
-}: any): Promise<string | null> {
+}: RewriteTodosParams): Promise<string | null> {
   let text = content
   // Process from bottom to top to keep indices stable
   const sorted = [...todos].sort((a, b) => b.start - a.start)
-  const pending: any[] = []
+  const pending: TodoMatch[] = []
   const contexts: string[] = []
   const fileKeys: string[] = []
   const todoKeys: string[] = []
@@ -166,7 +190,7 @@ async function rewriteTodos({
  * @param lines - Number of lines to include on each side.
  * @returns A string slice containing surrounding context.
  */
-function extractContext(content: string, todo: any, lines: number) {
+function extractContext(content: string, todo: TodoMatch, lines: number) {
   const arr = content.split('\n')
   const start = Math.max(0, todo.start - lines)
   const end = Math.min(arr.length, todo.end + lines + 1)

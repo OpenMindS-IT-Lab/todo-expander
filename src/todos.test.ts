@@ -1,7 +1,4 @@
-import {
-  assert,
-  assertEquals,
-} from 'https://deno.land/std@0.223.0/assert/mod.ts'
+import { assert, assertEquals } from '@std/assert'
 import { detectTodos } from './todos.ts'
 
 Deno.test('detectTodos: finds single-line TODOs', () => {

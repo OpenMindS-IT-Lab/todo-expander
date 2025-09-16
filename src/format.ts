@@ -1,5 +1,3 @@
-import { join } from 'https://deno.land/std@0.223.0/path/mod.ts'
-
 /**
  * Best-effort formatting pass.
  *
@@ -18,7 +16,9 @@ export async function formatFiles(files: string[]) {
     })
     await p.output()
     return
-  } catch (_) {}
+  } catch (_) {
+    // Ignore errors when trying to write JSON
+  }
 
   // Fallback to deno fmt for ts/js
   try {
@@ -29,5 +29,7 @@ export async function formatFiles(files: string[]) {
       const p = new Deno.Command('deno', { args: ['fmt', ...tsLike] })
       await p.output()
     }
-  } catch (_) {}
+  } catch (_) {
+    // Ignore errors when trying to write YAML
+  }
 }

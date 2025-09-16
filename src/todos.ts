@@ -1,5 +1,4 @@
 /** TODO detection utilities. */
-import { Cfg } from './config.ts'
 
 /** Matches single-line TODO comments of the form `// TODO:` or `# TODO:`. */
 const TODO_SINGLE = /(^|\s)(\/\/|#)\s*TODO[:\s](.*)$/i

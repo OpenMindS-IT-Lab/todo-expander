@@ -1,5 +1,5 @@
-import { exists } from 'https://deno.land/std@0.223.0/fs/exists.ts'
-import { dirname, join } from 'https://deno.land/std@0.223.0/path/mod.ts'
+import { exists } from '@std/fs/exists'
+import { dirname, join } from '@std/path'
 import { bold, gray, green, yellow } from './log.ts'
 
 /**
@@ -69,7 +69,8 @@ async function detectProjectType(
     const entries = []
     for await (const entry of Deno.readDir(cwd)) {
       if (
-        entry.isDirectory && !entry.name.startsWith('.') &&
+        entry.isDirectory &&
+        !entry.name.startsWith('.') &&
         !entry.name.startsWith('node_modules')
       ) {
         const hasPackageJson = await exists(
@@ -116,7 +117,7 @@ async function copyTemplate(
   }
 
   // Check if target already exists
-  if (!force && await exists(targetPath)) {
+  if (!force && (await exists(targetPath))) {
     console.log(
       yellow(
         `Skipping ${targetPath} (already exists, use --force to overwrite)`,
@@ -225,10 +226,12 @@ export async function initProject(options: InitOptions): Promise<void> {
   console.log(bold('🚀 Initializing todo-expander project...\n'))
 
   // Detect or use provided template
-  const detectedTemplate = templateOverride || await detectProjectType(cwd)
+  const detectedTemplate = templateOverride || (await detectProjectType(cwd))
   const template = TEMPLATES[detectedTemplate]
 
-  console.log(`Template: ${bold(detectedTemplate)} (${template.description})\n`)
+  console.log(
+    `Template: ${bold(detectedTemplate)} (${template.description})\n`,
+  )
 
   const createdFiles: string[] = []
 

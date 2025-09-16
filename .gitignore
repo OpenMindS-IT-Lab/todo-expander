@@ -3,3 +3,15 @@
 .env.*
 !.env.example
 npm/
+
+# Build outputs
+dist/
+
+# OS / Editor files
+.DS_Store
+.vscode/
+.idea/
+
+# Logs and coverage
+*.log
+coverage/
