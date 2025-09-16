@@ -1,10 +1,10 @@
 {
   "name": "@openminds-it-lab/todo-expander",
   "version": "0.1.0",
-  "description": "Expand TODOs using LLM-friendly workflows (OpenMinds IT Lab)",
-  "main": "index.js",
+  "description": "Transform simple TODO comments into structured, Codex-ready task briefs using AI.",
+  "type": "module",
   "bin": {
-    "todo-expand": "bin.js"
+    "todo-expand": "./bin/todo-expand.js"
   },
   "repository": {
     "type": "git",
@@ -12,11 +12,15 @@
   },
   "keywords": [
     "todo",
-    "llm",
     "ai",
-    "productivity",
-    "development",
+    "codex",
+    "developer-tools",
     "automation",
+    "typescript",
+    "cli",
+    "openai",
+    "gpt",
+    "code-enhancement",
     "openminds",
     "it-lab"
   ],
@@ -26,11 +30,9 @@
     "url": "https://github.com/OpenMindS-IT-Lab/todo-expander/issues"
   },
   "homepage": "https://github.com/OpenMindS-IT-Lab/todo-expander#readme",
-  "dependencies": {
-    "todo-expander": "^0.1.0"
-  },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "engines": {
     "node": ">=18"

@@ -10,7 +10,7 @@ if [ -n "$staged_files" ]; then
     echo "$staged_files" | while IFS= read -r file; do
         if [ -n "$file" ] && [ -f "$file" ]; then
             echo "Formatting: $file"
-            deno fmt "$file"
+            deno run -A npm:prettier@^3.3.3 --log-level warn --write "$file"
         fi
     done
 else

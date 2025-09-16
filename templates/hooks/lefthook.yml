@@ -21,7 +21,8 @@ pre-commit:
         # Check if todo-expand is available
         if ! command -v todo-expand >/dev/null 2>&1; then
           echo "Warning: todo-expand not found"
-          echo "Install: npm install -g todo-expander"
+          echo "Install: npm install -g @openminds-it-lab/todo-expander"
+ab/todo-expander"
           exit 0
         fi
         

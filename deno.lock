@@ -4,6 +4,7 @@
     "jsr:@david/code-block-writer@^13.0.2": "13.0.3",
     "jsr:@deno/cache-dir@~0.10.3": "0.10.3",
     "jsr:@deno/dnt@0.41": "0.41.3",
+    "jsr:@saladin/todo-expander@*": "0.1.0",
     "jsr:@std/assert@0.223": "0.223.0",
     "jsr:@std/assert@0.226": "0.226.0",
     "jsr:@std/bytes@0.223": "0.223.0",
@@ -47,6 +48,14 @@
         "jsr:@std/fs@1",
         "jsr:@std/path@1",
         "jsr:@ts-morph/bootstrap"
+      ]
+    },
+    "@saladin/todo-expander@0.1.0": {
+      "integrity": "d499c006c14bfa43526d71731a96f71fd51b49f8c62cf4cff4dea0b1a35ba4b6",
+      "dependencies": [
+        "jsr:@std/fmt@1",
+        "jsr:@std/fs@1",
+        "jsr:@std/path@1"
       ]
     },
     "@std/assert@0.223.0": {

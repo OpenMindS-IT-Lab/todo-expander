@@ -24,5 +24,5 @@ if command -v todo-expand >/dev/null 2>&1; then
   fi
 else
   echo "Warning: todo-expand not found in PATH"
-  echo "Install: npm install -g todo-expander"
+  echo "Install: npm install -g @openminds-it-lab/todo-expander"
 fi
