@@ -4,7 +4,8 @@
 set -e
 
 # Get staged files and filter for files that Deno can lint
-staged_files=$(git diff --name-only --cached --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx)$' || true)
+# Exclude npm-scoped/ and dist/ directories
+staged_files=$(git diff --name-only --cached --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx)$' | grep -v '^npm-scoped/' | grep -v '^dist/' || true)
 
 if [ -n "$staged_files" ]; then
     echo "$staged_files" | while IFS= read -r file; do

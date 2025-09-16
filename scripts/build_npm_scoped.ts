@@ -167,7 +167,32 @@ const wrapperScript = `#!/usr/bin/env node
 `
 
 await Deno.writeTextFile(binWrapperPath, wrapperScript)
+// Make the binary executable
+await Deno.chmod(binWrapperPath, 0o755)
 console.log('📄 Created ESM binary wrapper')
+
+// Fix malformed shebang in generated ESM binary
+const esmBinaryFullPath = join(outDir, 'esm', 'bin', 'todo-expand.js')
+try {
+  let esmBinaryContent = await Deno.readTextFile(esmBinaryFullPath)
+
+  // Remove malformed shebang lines that DNT sometimes generates
+  esmBinaryContent = esmBinaryContent.replace(
+    /^#!\/usr\/bin\/env node\nimport "\.\.\/_dnt\.polyfills\.js";\nimport \* as dntShim from "\.\.\/_dnt\.shims\.js";\n!\/usr\/bin \/ env - S;\ndeno;\nrun - A;/m,
+    '#!/usr/bin/env node\nimport "../_dnt.polyfills.js";\nimport * as dntShim from "../_dnt.shims.js";',
+  )
+
+  // Fix the import.meta.main check that DNT sometimes breaks
+  esmBinaryContent = esmBinaryContent.replace(
+    /if \(globalThis\[Symbol\.for\("import-meta-ponyfill-esmodule"\)\]\(import\.meta\)\.main\) \{[\s\S]*?\}$/m,
+    'main().catch((err) => {\n    console.error(err);\n    dntShim.Deno.exit(1);\n});',
+  )
+
+  await Deno.writeTextFile(esmBinaryFullPath, esmBinaryContent)
+  console.log('🔧 Fixed malformed shebang in ESM binary')
+} catch (error) {
+  console.warn(`⚠️  Could not fix ESM binary shebang: ${error.message}`)
+}
 
 packageJson.bin = {
   'todo-expand': './bin/todo-expand.js',

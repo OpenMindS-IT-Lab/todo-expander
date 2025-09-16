@@ -6,7 +6,10 @@ function minifyTemplate(t: string): string {
     .split('\n')
     .filter((ln) => !ln.trim().startsWith('```') && !ln.trim().startsWith('#'))
     .map((ln) => ln.replace(/\s+/g, ' ').trim())
-  return lines.join('\n').replace(/\n{2,}/g, '\n').trim()
+  return lines
+    .join('\n')
+    .replace(/\n{2,}/g, '\n')
+    .trim()
 }
 
 /**
@@ -38,7 +41,9 @@ async function loadTemplate(): Promise<string | null> {
 function _fillTemplate(tpl: string, vars: Record<string, string>): string {
   let out = tpl
   for (const [k, v] of Object.entries(vars)) {
-    const re = new RegExp(`\\{\\{${k}\\}\\}`, 'g')
+    // Use a more compatible regex pattern construction
+    const pattern = '\\{\\{' + k + '\\}\\}'
+    const re = new RegExp(pattern, 'g')
     out = out.replace(re, v)
   }
   return out
@@ -86,9 +91,11 @@ export async function renderPrompt({
 
   const parts: string[] = []
   if (tpl) parts.push(tpl)
-  else {parts.push(
+  else {
+    parts.push(
       'Task: Rewrite the TODO into a structured brief as a comment. Return only the rewritten comment.',
-    )}
+    )
+  }
   parts.push(`File: ${filePath}`)
   if (language) parts.push(`Language: ${language}`)
   if (style !== 'succinct') parts.push(`Style: ${style}`)
@@ -134,9 +141,11 @@ export async function renderPromptBatch({
 
   const parts: string[] = []
   if (tpl) parts.push(tpl)
-  else {parts.push(
+  else {
+    parts.push(
       'Task: Rewrite the TODO into a structured brief as a comment. Return only the rewritten comment.',
-    )}
+    )
+  }
   parts.push(`File: ${filePath}`)
   if (language) parts.push(`Language: ${language}`)
   if (style !== 'succinct') parts.push(`Style: ${style}`)
@@ -167,9 +176,15 @@ export async function renderPromptBatch({
  * @param cfg - Resolved configuration (model/endpoint).
  * @returns Rewritten comment text, or null on error.
  */
-export async function runLLM(
-  { prompt, apiKey, cfg }: { prompt: string; apiKey: string; cfg: Cfg },
-): Promise<string | null> {
+export async function runLLM({
+  prompt,
+  apiKey,
+  cfg,
+}: {
+  prompt: string
+  apiKey: string
+  cfg: Cfg
+}): Promise<string | null> {
   const body: Record<string, unknown> = {
     model: cfg.model,
     input: [
@@ -229,9 +244,9 @@ export async function runLLM(
 
     const detail = status
       ? `status=${status}`
-      : (isAbort
-        ? `timeout after ${cfg.timeout}ms`
-        : (err?.message || 'network error'))
+      : isAbort
+      ? `timeout after ${cfg.timeout}ms`
+      : err?.message || 'network error'
     if (attempt < totalAttempts && retriable) {
       const delay = Math.min(
         5000,

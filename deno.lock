@@ -12,7 +12,8 @@
     "jsr:@std/path@1": "1.1.2",
     "jsr:@std/path@^1.1.1": "1.1.2",
     "jsr:@ts-morph/bootstrap@0.27": "0.27.0",
-    "jsr:@ts-morph/common@0.27": "0.27.0"
+    "jsr:@ts-morph/common@0.27": "0.27.0",
+    "npm:prettier@^3.3.3": "3.6.2"
   },
   "jsr": {
     "@david/code-block-writer@13.0.3": {
@@ -65,6 +66,12 @@
         "jsr:@std/fs",
         "jsr:@std/path@1"
       ]
+    }
+  },
+  "npm": {
+    "prettier@3.6.2": {
+      "integrity": "sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==",
+      "bin": true
     }
   },
   "redirects": {

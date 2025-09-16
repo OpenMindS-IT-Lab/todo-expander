@@ -6,7 +6,10 @@ npm/
 
 # Build outputs
 dist/
-**node_modules/**
+*node_modules/**
+
+# npm-scoped generated files (keep source files tracked)
+npm-scoped/
 
 # OS / Editor files
 .DS_Store

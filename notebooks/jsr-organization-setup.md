@@ -24,6 +24,7 @@ As of January 2025, JSR appears to primarily support personal scopes. Organizati
 When JSR organization features become available:
 
 1. **Create Organization Scope**
+
    ```bash
    # Future command (when available)
    # deno publish --scope=@openminds-it-lab

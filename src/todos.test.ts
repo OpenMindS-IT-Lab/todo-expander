@@ -6,7 +6,9 @@ Deno.test('detectTodos: finds single-line TODOs', () => {
     'const a = 1 // TODO: tighten types',
     '# TODO add logging',
     'no todo here',
-  ].join('\n')
+  ].join(
+    '\n',
+  )
 
   const { todos } = detectTodos(content)
   assertEquals(todos.length, 2)
