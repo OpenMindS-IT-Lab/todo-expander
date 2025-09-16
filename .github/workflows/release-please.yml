@@ -56,7 +56,7 @@ jobs:
         env:
           JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
 
-  # Publish to NPM when a release is created  
+  # Publish to NPM when a release is created
   publish-npm:
     runs-on: ubuntu-latest
     needs: release-please

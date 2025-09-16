@@ -229,9 +229,7 @@ export async function initProject(options: InitOptions): Promise<void> {
   const detectedTemplate = templateOverride || (await detectProjectType(cwd))
   const template = TEMPLATES[detectedTemplate]
 
-  console.log(
-    `Template: ${bold(detectedTemplate)} (${template.description})\n`,
-  )
+  console.log(`Template: ${bold(detectedTemplate)} (${template.description})\n`)
 
   const createdFiles: string[] = []
 

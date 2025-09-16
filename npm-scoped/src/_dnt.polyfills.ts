@@ -100,155 +100,153 @@ interface ImportMetaPonyfillEsmodule {
   (importMeta: ImportMeta): ImportMeta;
 }
 interface ImportMetaPonyfill
-  extends ImportMetaPonyfillCommonjs, ImportMetaPonyfillEsmodule {
-}
+  extends ImportMetaPonyfillCommonjs, ImportMetaPonyfillEsmodule {}
 
 const defineGlobalPonyfill = (symbolFor: string, fn: Function) => {
   if (!Reflect.has(globalThis, Symbol.for(symbolFor))) {
-    Object.defineProperty(
-      globalThis,
-      Symbol.for(symbolFor),
-      {
-        configurable: true,
-        get() {
-          return fn;
-        },
+    Object.defineProperty(globalThis, Symbol.for(symbolFor), {
+      configurable: true,
+      get() {
+        return fn;
       },
-    );
+    });
   }
 };
 
-export let import_meta_ponyfill_commonjs = (
-  Reflect.get(globalThis, Symbol.for("import-meta-ponyfill-commonjs")) ??
-    (() => {
-      const moduleImportMetaWM = new WeakMap<NodeModule, ImportMeta>();
-      return (require, module) => {
-        let importMetaCache = moduleImportMetaWM.get(module);
-        if (importMetaCache == null) {
-          const importMeta = Object.assign(Object.create(null), {
-            url: pathToFileURL(module.filename).href,
-            main: require.main == module,
-            resolve: (specifier: string, parentURL = importMeta.url) => {
-              return pathToFileURL(
-                (importMeta.url === parentURL
-                  ? require
-                  : createRequire(parentURL))
-                  .resolve(specifier),
-              ).href;
-            },
-            filename: module.filename,
-            dirname: module.path,
-          });
-          moduleImportMetaWM.set(module, importMeta);
-          importMetaCache = importMeta;
-        }
-        return importMetaCache;
-      };
-    })()
-) as ImportMetaPonyfillCommonjs;
+export let import_meta_ponyfill_commonjs = (Reflect.get(
+  globalThis,
+  Symbol.for("import-meta-ponyfill-commonjs"),
+) ??
+  (() => {
+    const moduleImportMetaWM = new WeakMap<NodeModule, ImportMeta>();
+    return (require, module) => {
+      let importMetaCache = moduleImportMetaWM.get(module);
+      if (importMetaCache == null) {
+        const importMeta = Object.assign(Object.create(null), {
+          url: pathToFileURL(module.filename).href,
+          main: require.main == module,
+          resolve: (specifier: string, parentURL = importMeta.url) => {
+            return pathToFileURL(
+              (importMeta.url === parentURL
+                ? require
+                : createRequire(parentURL)).resolve(
+                  specifier,
+                ),
+            ).href;
+          },
+          filename: module.filename,
+          dirname: module.path,
+        });
+        moduleImportMetaWM.set(module, importMeta);
+        importMetaCache = importMeta;
+      }
+      return importMetaCache;
+    };
+  })()) as ImportMetaPonyfillCommonjs;
 defineGlobalPonyfill(
   "import-meta-ponyfill-commonjs",
   import_meta_ponyfill_commonjs,
 );
 
-export let import_meta_ponyfill_esmodule = (
-  Reflect.get(globalThis, Symbol.for("import-meta-ponyfill-esmodule")) ??
-    ((importMeta: ImportMeta) => {
-      const resolveFunStr = String(importMeta.resolve);
-      const shimWs = new WeakSet();
-      //@ts-ignore
-      const mainUrl = ("file:///" + process.argv[1].replace(/\\/g, "/"))
-        .replace(
-          /\/{3,}/,
-          "///",
-        );
-      const commonShim = (importMeta: ImportMeta) => {
-        if (typeof importMeta.main !== "boolean") {
-          importMeta.main = importMeta.url === mainUrl;
-        }
-        if (typeof importMeta.filename !== "string") {
-          importMeta.filename = fileURLToPath(importMeta.url);
-          importMeta.dirname = dirname(importMeta.filename);
-        }
-      };
-      if (
-        // v16.2.0+, v14.18.0+: Add support for WHATWG URL object to parentURL parameter.
-        resolveFunStr === "undefined" ||
-        // v20.0.0+, v18.19.0+"" This API now returns a string synchronously instead of a Promise.
-        resolveFunStr.startsWith("async")
-        // enable by --experimental-import-meta-resolve flag
-      ) {
-        import_meta_ponyfill_esmodule = (importMeta: ImportMeta) => {
-          if (!shimWs.has(importMeta)) {
-            shimWs.add(importMeta);
-            const importMetaUrlRequire = {
-              url: importMeta.url,
-              require: createRequire(importMeta.url),
-            };
-            importMeta.resolve = function resolve(
-              specifier: string,
-              parentURL = importMeta.url,
-            ) {
-              return pathToFileURL(
-                (importMetaUrlRequire.url === parentURL
-                  ? importMetaUrlRequire.require
-                  : createRequire(parentURL)).resolve(specifier),
-              ).href;
-            };
-            commonShim(importMeta);
-          }
-          return importMeta;
-        };
-      } else {
-        /// native support
-        import_meta_ponyfill_esmodule = (importMeta: ImportMeta) => {
-          if (!shimWs.has(importMeta)) {
-            shimWs.add(importMeta);
-            commonShim(importMeta);
-          }
-          return importMeta;
-        };
+export let import_meta_ponyfill_esmodule = (Reflect.get(
+  globalThis,
+  Symbol.for("import-meta-ponyfill-esmodule"),
+) ??
+  ((importMeta: ImportMeta) => {
+    const resolveFunStr = String(importMeta.resolve);
+    const shimWs = new WeakSet();
+    //@ts-ignore
+    const mainUrl = ("file:///" + process.argv[1].replace(/\\/g, "/")).replace(
+      /\/{3,}/,
+      "///",
+    );
+    const commonShim = (importMeta: ImportMeta) => {
+      if (typeof importMeta.main !== "boolean") {
+        importMeta.main = importMeta.url === mainUrl;
       }
-      return import_meta_ponyfill_esmodule(importMeta);
-    })
-) as ImportMetaPonyfillEsmodule;
+      if (typeof importMeta.filename !== "string") {
+        importMeta.filename = fileURLToPath(importMeta.url);
+        importMeta.dirname = dirname(importMeta.filename);
+      }
+    };
+    if (
+      // v16.2.0+, v14.18.0+: Add support for WHATWG URL object to parentURL parameter.
+      resolveFunStr === "undefined" ||
+      // v20.0.0+, v18.19.0+"" This API now returns a string synchronously instead of a Promise.
+      resolveFunStr.startsWith("async")
+      // enable by --experimental-import-meta-resolve flag
+    ) {
+      import_meta_ponyfill_esmodule = (importMeta: ImportMeta) => {
+        if (!shimWs.has(importMeta)) {
+          shimWs.add(importMeta);
+          const importMetaUrlRequire = {
+            url: importMeta.url,
+            require: createRequire(importMeta.url),
+          };
+          importMeta.resolve = function resolve(
+            specifier: string,
+            parentURL = importMeta.url,
+          ) {
+            return pathToFileURL(
+              (importMetaUrlRequire.url === parentURL
+                ? importMetaUrlRequire.require
+                : createRequire(parentURL)).resolve(specifier),
+            ).href;
+          };
+          commonShim(importMeta);
+        }
+        return importMeta;
+      };
+    } else {
+      /// native support
+      import_meta_ponyfill_esmodule = (importMeta: ImportMeta) => {
+        if (!shimWs.has(importMeta)) {
+          shimWs.add(importMeta);
+          commonShim(importMeta);
+        }
+        return importMeta;
+      };
+    }
+    return import_meta_ponyfill_esmodule(importMeta);
+  })) as ImportMetaPonyfillEsmodule;
 defineGlobalPonyfill(
   "import-meta-ponyfill-esmodule",
   import_meta_ponyfill_esmodule,
 );
 
-export let import_meta_ponyfill = (
-  (...args: any[]) => {
-    const _MODULE = (() => {
-      if (typeof require === "function" && typeof module === "object") {
-        return "commonjs";
-      } else {
-        // eval("typeof import.meta");
-        return "esmodule";
-      }
-    })();
-    if (_MODULE === "commonjs") {
-      //@ts-ignore
-      import_meta_ponyfill = (r, m) => import_meta_ponyfill_commonjs(r, m);
+export let import_meta_ponyfill = ((...args: any[]) => {
+  const _MODULE = (() => {
+    if (typeof require === "function" && typeof module === "object") {
+      return "commonjs";
     } else {
-      //@ts-ignore
-      import_meta_ponyfill = (im) => import_meta_ponyfill_esmodule(im);
+      // eval("typeof import.meta");
+      return "esmodule";
     }
+  })();
+  if (_MODULE === "commonjs") {
     //@ts-ignore
-    return import_meta_ponyfill(...args);
+    import_meta_ponyfill = (r, m) => import_meta_ponyfill_commonjs(r, m);
+  } else {
+    //@ts-ignore
+    import_meta_ponyfill = (im) => import_meta_ponyfill_esmodule(im);
   }
-) as ImportMetaPonyfill;
+  //@ts-ignore
+  return import_meta_ponyfill(...args);
+}) as ImportMetaPonyfill;
 // taken from https://github.com/denoland/deno/blob/7281775381cda79ef61df27820387dc2c74e0384/cli/tsc/dts/lib.esnext.array.d.ts#L21
 declare global {
   interface ArrayConstructor {
     fromAsync<T>(
-        iterableOrArrayLike: AsyncIterable<T> | Iterable<T | Promise<T>> | ArrayLike<T | Promise<T>>,
+      iterableOrArrayLike:
+        | AsyncIterable<T>
+        | Iterable<T | Promise<T>>
+        | ArrayLike<T | Promise<T>>,
     ): Promise<T[]>;
-    
+
     fromAsync<T, U>(
-        iterableOrArrayLike: AsyncIterable<T> | Iterable<T> | ArrayLike<T>, 
-        mapFn: (value: Awaited<T>) => U, 
-        thisArg?: any,
+      iterableOrArrayLike: AsyncIterable<T> | Iterable<T> | ArrayLike<T>,
+      mapFn: (value: Awaited<T>) => U,
+      thisArg?: any,
     ): Promise<Awaited<U>[]>;
   }
 }
@@ -293,17 +291,17 @@ const iteratorSymbol = Symbol.iterator;
 const asyncIteratorSymbol = Symbol.asyncIterator;
 const IntrinsicArray = Array;
 const tooLongErrorMessage =
-  'Input is too long and exceeded Number.MAX_SAFE_INTEGER times.';
+  "Input is too long and exceeded Number.MAX_SAFE_INTEGER times.";
 
 function isConstructor(obj: any) {
   if (obj != null) {
     const prox: any = new Proxy(obj, {
-      construct () {
+      construct() {
         return prox;
       },
     });
     try {
-      new prox;
+      new prox();
       return true;
     } catch (err) {
       return false;
@@ -314,39 +312,29 @@ function isConstructor(obj: any) {
 }
 
 async function fromAsync(this: any, items: any, mapfn: any, thisArg: any) {
-  const itemsAreIterable = (
-    asyncIteratorSymbol in items ||
-    iteratorSymbol in items
-  );
+  const itemsAreIterable = asyncIteratorSymbol in items ||
+    iteratorSymbol in items;
 
   if (itemsAreIterable) {
-    const result = isConstructor(this)
-      ? new this
-      : IntrinsicArray(0);
+    const result = isConstructor(this) ? new this() : IntrinsicArray(0);
 
     let i = 0;
 
     for await (const v of items) {
       if (i > MAX_SAFE_INTEGER) {
         throw TypeError(tooLongErrorMessage);
-      }
-
-      else if (mapfn) {
+      } else if (mapfn) {
         result[i] = await mapfn.call(thisArg, v, i);
-      }
-
-      else {
+      } else {
         result[i] = v;
       }
 
-      i ++;
+      i++;
     }
 
     result.length = i;
     return result;
-  }
-
-  else {
+  } else {
     // In this case, the items are assumed to be an arraylike object with
     // a length property and integer properties for each element.
     const { length } = items;
@@ -365,13 +353,11 @@ async function fromAsync(this: any, items: any, mapfn: any, thisArg: any) {
 
       if (mapfn) {
         result[i] = await mapfn.call(thisArg, v, i);
-      }
-
-      else {
+      } else {
         result[i] = v;
       }
 
-      i ++;
+      i++;
     }
 
     result.length = i;
@@ -383,7 +369,7 @@ if (!Array.fromAsync) {
   (Array as any).fromAsync = fromAsync;
 }
 
-export {};// https://github.com/tc39/proposal-accessible-object-hasownproperty/blob/main/polyfill.js
+export {}; // https://github.com/tc39/proposal-accessible-object-hasownproperty/blob/main/polyfill.js
 if (!Object.hasOwn) {
   Object.defineProperty(Object, "hasOwn", {
     value: function (object: any, property: any) {

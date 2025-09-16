@@ -1,6 +1,6 @@
 {
   "name": "@openminds-it-lab/todo-expander",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "exports": {
     ".": "./src/mod.ts",
     "./config": "./src/config.ts",
@@ -35,20 +35,18 @@
     "lint:staged": "./scripts/lint-staged.sh"
   },
   "fmt": {
-    "include": [
-      "src/",
-      "scripts/"
-    ],
-    "exclude": [
-      "dist/",
-      "npm-scoped/"
-    ],
+    "include": ["src/", "scripts/"],
+    "exclude": ["dist/", "npm-scoped/"],
     "indentWidth": 2,
     "lineWidth": 80,
     "proseWrap": "preserve",
     "semiColons": false,
     "singleQuote": true,
     "useTabs": false
+  },
+  "lint": {
+    "include": ["src/", "scripts/"],
+    "exclude": ["dist/", "npm-scoped/"]
   },
   "imports": {
     "@std/path": "jsr:@std/path@^1.0.0",

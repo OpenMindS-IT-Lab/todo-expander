@@ -455,9 +455,10 @@ export async function loadConfig({
 
   const envSections = Deno.env.get('TODO_EXPAND_SECTIONS')
   if (envSections && envSections.trim()) {
-    envConfig.sections = envSections.split(',').map((s) => s.trim()).filter(
-      (s) => s.length > 0,
-    )
+    envConfig.sections = envSections
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
   }
 
   // Step 6: Merge all configurations (precedence: CLI > env > project > global > defaults)
@@ -478,7 +479,7 @@ export async function loadConfig({
   }
   if (cli.sections) {
     cliConfig.sections = Array.isArray(cli.sections)
-      ? cli.sections as string[]
+      ? (cli.sections as string[])
       : (cli.sections as string).split(',').map((s: string) => s.trim())
   }
   if (cli.model !== undefined) cliConfig.model = cli.model
@@ -512,7 +513,9 @@ export async function loadConfig({
   const styleUsed = finalConfig.style || defaults.style
   const verboseLogsResolved = finalConfig.verboseLogs !== undefined
     ? finalConfig.verboseLogs
-    : (styleUsed === 'verbose' ? true : defaults.verboseLogs)
+    : styleUsed === 'verbose'
+    ? true
+    : defaults.verboseLogs
 
   // Step 9: Create final configuration with all fields resolved
   const resolved: Cfg = {

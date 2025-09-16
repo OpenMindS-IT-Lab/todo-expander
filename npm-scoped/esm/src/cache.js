@@ -5,13 +5,12 @@
  */
 import * as dntShim from "../_dnt.shims.js";
 export async function readCache(path) {
-    try {
-        const text = await dntShim.Deno.readTextFile(path);
-        return JSON.parse(text);
-    }
-    catch {
-        return {};
-    }
+  try {
+    const text = await dntShim.Deno.readTextFile(path);
+    return JSON.parse(text);
+  } catch {
+    return {};
+  }
 }
 /**
  * Persist JSON cache to disk, ensuring parent directory exists (best-effort).
@@ -19,13 +18,12 @@ export async function readCache(path) {
  * @param data - Key-value mapping of cache entries.
  */
 export async function writeCache(path, data) {
-    try {
-        await dntShim.Deno.mkdir(new URL('./', `file://${path}`).pathname, {
-            recursive: true,
-        });
-    }
-    catch {
-        /* ignore */
-    }
-    await dntShim.Deno.writeTextFile(path, JSON.stringify(data, null, 2));
+  try {
+    await dntShim.Deno.mkdir(new URL("./", `file://${path}`).pathname, {
+      recursive: true,
+    });
+  } catch {
+    /* ignore */
+  }
+  await dntShim.Deno.writeTextFile(path, JSON.stringify(data, null, 2));
 }

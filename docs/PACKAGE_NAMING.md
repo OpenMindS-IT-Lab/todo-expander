@@ -35,7 +35,7 @@ After comprehensive availability checks across NPM, JSR, GitHub, and binary dist
 ```bash
 # All checked packages return 404 Not Found - AVAILABLE
 npm view todo-expander     # ✅ AVAILABLE
-npm view todo-expand       # ✅ AVAILABLE  
+npm view todo-expand       # ✅ AVAILABLE
 npm view todo-expander-cli # ✅ AVAILABLE
 ```
 
@@ -150,14 +150,7 @@ brew install todo-expand  # (after brew formula submission)
   "bin": {
     "todo-expand": "./bin/todo-expand.js"
   },
-  "files": [
-    "bin/",
-    "dist/",
-    "schema/",
-    "prompts/",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["bin/", "dist/", "schema/", "prompts/", "README.md", "LICENSE"],
   "engines": {
     "node": ">=18.0.0"
   }

@@ -68,7 +68,10 @@ export async function discoverTargets({
 }): Promise<string[]> {
   if (mode === 'staged') {
     const out = await git(['diff', '--name-only', '--cached'], { cwd })
-    const files = out.split('\n').map((s) => s.trim()).filter(Boolean)
+    const files = out
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean)
     const abs = files.map((f) => join(cwd, f))
     const filtered: string[] = []
     for (const file of abs) {
