@@ -31,7 +31,6 @@ jobs:
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          command: manifest
 
   # Publish to JSR when a release is created
   publish-jsr:
