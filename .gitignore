@@ -8,6 +8,12 @@ npm/
 dist/
 **node_modules/**
 
+# npm-scoped generated files (keep source files tracked)
+npm-scoped/esm/deps/
+npm-scoped/src/deps/
+npm-scoped/node_modules/
+npm-scoped/package-lock.json
+
 # OS / Editor files
 .DS_Store
 
