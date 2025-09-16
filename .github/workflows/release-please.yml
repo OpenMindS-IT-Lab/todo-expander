@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
+      release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
       version: ${{ steps.release.outputs.version }}
     steps:
@@ -36,7 +37,7 @@ jobs:
   publish-jsr:
     runs-on: ubuntu-latest
     needs: release-please
-    if: needs.release-please.outputs.releases_created == 'true'
+    if: needs.release-please.outputs.release_created == 'true' || needs.release-please.outputs.releases_created == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2
@@ -45,13 +46,16 @@ jobs:
       - name: Publish to JSR
         run: deno publish
         env:
-          # JSR_TOKEN: ${{ secrets.JSR_TOKEN }}  # Uncomment when token is available
+          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
 
   # Publish to NPM when a release is created  
   publish-npm:
     runs-on: ubuntu-latest
     needs: release-please
-    if: needs.release-please.outputs.releases_created == 'true'
+    if: needs.release-please.outputs.release_created == 'true' || needs.release-please.outputs.releases_created == 'true'
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2
@@ -62,6 +66,7 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+          scope: '@openminds-it-lab'
       - name: Build NPM package (scoped)
         run: deno run -A scripts/build_npm_scoped.ts
       - name: Publish to NPM (Organization Scope)
